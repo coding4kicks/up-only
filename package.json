@@ -1,0 +1,14 @@
+{
+  "name": "up-only",
+  "version": "1.0.0",
+  "description": "Up Only NFT contracts.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "coding4kicks",
+  "license": "MIT",
+  "devDependencies": {
+    "hardhat": "^2.19.1"
+  }
+}
