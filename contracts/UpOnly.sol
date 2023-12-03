@@ -5,7 +5,7 @@ import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 
 contract UpOnly is ERC721 {
 
-  string baseURI = "IPFS:todo";
+  string public baseURI = "IPFS:todo";
   string public baseExtension = ".json";
   uint256 public cost = 0.1 ether;
   uint256 public supply = 0;
@@ -13,10 +13,6 @@ contract UpOnly is ERC721 {
   uint256 public maxMintAmount = 3;
 
   constructor() ERC721("Test Flight", "UP") {
-  }
-
-  function _baseURI() internal view override returns (string memory) {
-    return baseURI;
   }
 
   // public
