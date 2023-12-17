@@ -17,10 +17,10 @@ contract UpOnly is ERC721 {
 
   // public
   function mint(uint256 _mintAmount) public payable {
-    require(_mintAmount > 0);
-    require(_mintAmount <= maxMintAmount);
-    require(supply + _mintAmount <= maxSupply);
-    require(msg.value >= cost * _mintAmount);
+    require(_mintAmount > 0, "WHY ZERO");
+    require(_mintAmount + balanceOf(msg.sender) <= maxMintAmount, "TOO GREEDY");
+    require(supply + _mintAmount <= maxSupply, "ALL GONE");
+    require(msg.value >= cost * _mintAmount, "CHEAP VALUE");
 
     for (uint256 i = 1; i <= _mintAmount; i++) {
       uint256 tokenId = supply;
