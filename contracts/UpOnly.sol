@@ -9,8 +9,8 @@ contract UpOnly is ERC721 {
   string public baseExtension = ".json";
   uint256 public cost = 0.1 ether;
   uint256 public supply = 0;
-  uint256 public maxSupply = 33;
-  uint256 public maxMintAmount = 3;
+  uint256 public maxSupply = 99;
+  uint256 public maxMintAmount = 5;
 
   constructor() ERC721("Test Flight", "UP") {
   }

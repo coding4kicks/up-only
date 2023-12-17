@@ -10,10 +10,11 @@ const BASE_URI = 'IPFS:todo';
 const BASE_EXTENSION = '.json';
 const COST = ethers.parseEther('0.1');
 const COST_TWO = ethers.parseEther('0.2');
-const COST_THREE = ethers.parseEther('0.3');
 const COST_FOUR = ethers.parseEther('0.4');
-const MAX_SUPPLY = 33;
-const MAX_MINT_AMOUNT = 3;
+const COST_FIVE = ethers.parseEther('0.5');
+const COST_SIX = ethers.parseEther('0.6');
+const MAX_SUPPLY = 99;
+const MAX_MINT_AMOUNT = 5;
 
 describe('UpOnly', function () {
   // We define a fixture to reuse the same setup in every test.
@@ -120,7 +121,6 @@ describe('UpOnly', function () {
       const addr2Address = await addr2.getAddress();
 
       for (let i = 0; i < MAX_MINT_AMOUNT; i++) {
-        console.log(i);
         expect(await upOnly.balanceOf(ownerAddress)).to.equal(i);
         await upOnly.mint(1, { value: COST });
         expect(await upOnly.balanceOf(ownerAddress)).to.equal(i + 1);
@@ -134,11 +134,13 @@ describe('UpOnly', function () {
       expect(await upOnly.ownerOf(MAX_MINT_AMOUNT + 1)).to.equal(addr1Address);
 
       expect(await upOnly.balanceOf(addr2Address)).to.equal(0);
-      await upOnly.connect(addr2).mint(3, { value: COST_THREE });
-      expect(await upOnly.balanceOf(addr2Address)).to.equal(3);
+      await upOnly.connect(addr2).mint(5, { value: COST_FIVE });
+      expect(await upOnly.balanceOf(addr2Address)).to.equal(5);
       expect(await upOnly.ownerOf(MAX_MINT_AMOUNT + 2)).to.equal(addr2Address);
       expect(await upOnly.ownerOf(MAX_MINT_AMOUNT + 3)).to.equal(addr2Address);
       expect(await upOnly.ownerOf(MAX_MINT_AMOUNT + 4)).to.equal(addr2Address);
+      expect(await upOnly.ownerOf(MAX_MINT_AMOUNT + 4)).to.equal(addr2Address);
+      expect(await upOnly.ownerOf(MAX_MINT_AMOUNT + 5)).to.equal(addr2Address);
     });
 
     it('Should not allow minting more than max mint amount tokens per wallet', async function () {
@@ -158,8 +160,9 @@ describe('UpOnly', function () {
       expect(await upOnly.balanceOf(ownerAddress)).to.equal(MAX_MINT_AMOUNT);
 
       expect(await upOnly.balanceOf(addr1Address)).to.equal(0);
-      await expect(upOnly.connect(addr1).mint(4, { value: COST_FOUR })).to.be
-        .reverted;
+      await expect(
+        upOnly.connect(addr1).mint(MAX_MINT_AMOUNT + 1, { value: COST_SIX })
+      ).to.be.reverted;
       expect(await upOnly.balanceOf(addr1Address)).to.equal(0);
     });
 
@@ -179,19 +182,63 @@ describe('UpOnly', function () {
       expect(await upOnly.supply()).to.equal(1);
     });
 
-    it('Should allow minting up to max supply tokens', async function () {
-      // const { upOnly, owner, addresses } = await loadFixture(upOnlyFixture);
-      // const ownerAddress = await owner.getAddress();
-      // for (let i = 0; i < MAX_SUPPLY; i++) {
-      //   console.log(addresses[i]);
-      //   await upOnly.connect(addresses[i]).mint(1, { value: COST });
-      // }
-      // expect(await upOnly.balanceOf(ownerAddress)).to.equal(0);
-      // await expect(upOnly.mint(1, { value: COST })).to.be.reverted;
-      // expect(await upOnly.balanceOf(ownerAddress)).to.equal(0);
+    it('Should allow minting up to max supply of 99 tokens', async function () {
+      const { upOnly, owner, addr1, addr2, addresses } = await loadFixture(
+        upOnlyFixture
+      );
+      const ownerAddress = await owner.getAddress();
+      const addr1Address = await addr1.getAddress();
+      const addr2Address = await addr2.getAddress();
+
+      // Mint 85
+      for (let i = 0; i < 17; i++) {
+        await upOnly.connect(addresses[i]).mint(5, { value: COST_FIVE });
+      }
+
+      // Plus 5
+      expect(await upOnly.balanceOf(addr1Address)).to.equal(0);
+      await upOnly.connect(addr1).mint(5, { value: COST_FIVE });
+      expect(await upOnly.balanceOf(addr1Address)).to.equal(5);
+
+      // Plus 5
+      expect(await upOnly.balanceOf(addr2Address)).to.equal(0);
+      await upOnly.connect(addr2).mint(5, { value: COST_FIVE });
+      expect(await upOnly.balanceOf(addr2Address)).to.equal(5);
+
+      // Plus 4 equals 99
+      expect(await upOnly.balanceOf(ownerAddress)).to.equal(0);
+      await upOnly.mint(4, { value: COST_FOUR });
+      expect(await upOnly.balanceOf(ownerAddress)).to.equal(4);
     });
 
-    it('Should not allow minting more than max supply tokens per wallet', async function () {});
+    it('Should not allow minting more than max supply tokens per wallet', async function () {
+      const { upOnly, owner, addr1, addr2, addresses } = await loadFixture(
+        upOnlyFixture
+      );
+      const ownerAddress = await owner.getAddress();
+      const addr1Address = await addr1.getAddress();
+      const addr2Address = await addr2.getAddress();
+
+      // Mint 85
+      for (let i = 0; i < 17; i++) {
+        await upOnly.connect(addresses[i]).mint(5, { value: COST_FIVE });
+      }
+
+      // Plus 5
+      expect(await upOnly.balanceOf(addr1Address)).to.equal(0);
+      await upOnly.connect(addr1).mint(5, { value: COST_FIVE });
+      expect(await upOnly.balanceOf(addr1Address)).to.equal(5);
+
+      // Plus 5
+      expect(await upOnly.balanceOf(addr2Address)).to.equal(0);
+      await upOnly.connect(addr2).mint(5, { value: COST_FIVE });
+      expect(await upOnly.balanceOf(addr2Address)).to.equal(5);
+
+      // Plus 5 equals 100 > 99 => blow up
+      expect(await upOnly.balanceOf(ownerAddress)).to.equal(0);
+      await expect(upOnly.mint(5, { value: COST_FIVE })).to.be.reverted;
+      expect(await upOnly.balanceOf(ownerAddress)).to.equal(0);
+    });
   });
 
   describe('Transfers', function () {
