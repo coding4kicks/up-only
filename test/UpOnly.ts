@@ -1,8 +1,4 @@
-import {
-  time,
-  loadFixture
-} from '@nomicfoundation/hardhat-toolbox/network-helpers';
-import { anyValue } from '@nomicfoundation/hardhat-chai-matchers/withArgs';
+import { loadFixture } from '@nomicfoundation/hardhat-toolbox/network-helpers';
 import { expect } from 'chai';
 import { ethers } from 'hardhat';
 
@@ -239,9 +235,127 @@ describe('UpOnly', function () {
       await expect(upOnly.mint(5, { value: COST_FIVE })).to.be.reverted;
       expect(await upOnly.balanceOf(ownerAddress)).to.equal(0);
     });
+
+    it('Should tranfer mint value to royalty wallet', async function () {
+      // 'TODO';
+    });
   });
 
   describe('Transfers', function () {
-    it('Should allow transfers (TODO: fix)', async function () {});
+    it('TODO: Should allow transferFrom with value greater than last trade', async function () {
+      const { upOnly, owner, addr1 } = await loadFixture(upOnlyFixture);
+      const ownerAddress = await owner.getAddress();
+      const addr1Address = await addr1.getAddress();
+
+      expect(await upOnly.balanceOf(ownerAddress)).to.equal(0);
+      await upOnly.mint(1, { value: COST });
+      expect(await upOnly.balanceOf(ownerAddress)).to.equal(1);
+      expect(await upOnly.balanceOf(addr1Address)).to.equal(0);
+      expect(await upOnly.ownerOf(0)).to.equal(ownerAddress);
+      await upOnly.transferFrom(ownerAddress, addr1Address, 0);
+      expect(await upOnly.balanceOf(ownerAddress)).to.equal(0);
+      expect(await upOnly.balanceOf(addr1Address)).to.equal(1);
+      expect(await upOnly.ownerOf(0)).to.equal(addr1Address);
+    });
+
+    it('TODO: Should not allow transferFrom with value less than or equal to last trade', async function () {
+      const { upOnly, owner, addr1 } = await loadFixture(upOnlyFixture);
+      const ownerAddress = await owner.getAddress();
+      const addr1Address = await addr1.getAddress();
+
+      expect(await upOnly.balanceOf(ownerAddress)).to.equal(0);
+      await upOnly.mint(1, { value: COST });
+      expect(await upOnly.balanceOf(ownerAddress)).to.equal(1);
+      expect(await upOnly.balanceOf(addr1Address)).to.equal(0);
+      expect(await upOnly.ownerOf(0)).to.equal(ownerAddress);
+      await upOnly.transferFrom(ownerAddress, addr1Address, 0);
+      expect(await upOnly.balanceOf(ownerAddress)).to.equal(0);
+      expect(await upOnly.balanceOf(addr1Address)).to.equal(1);
+      expect(await upOnly.ownerOf(0)).to.equal(addr1Address);
+    });
+
+    it('Should not allow transferFrom with no value', async function () {
+      const { upOnly, owner, addr1 } = await loadFixture(upOnlyFixture);
+      const ownerAddress = await owner.getAddress();
+      const addr1Address = await addr1.getAddress();
+
+      expect(await upOnly.balanceOf(ownerAddress)).to.equal(0);
+      await upOnly.mint(1, { value: COST });
+      expect(await upOnly.balanceOf(ownerAddress)).to.equal(1);
+      expect(await upOnly.balanceOf(addr1Address)).to.equal(0);
+      expect(await upOnly.ownerOf(0)).to.equal(ownerAddress);
+      await upOnly.transferFrom(ownerAddress, addr1Address, 0);
+      expect(await upOnly.balanceOf(ownerAddress)).to.equal(0);
+      expect(await upOnly.balanceOf(addr1Address)).to.equal(1);
+      expect(await upOnly.ownerOf(0)).to.equal(addr1Address);
+    });
+
+    it('TODO: Should correctly handle safeTransferFrom', async function () {
+      const { upOnly, owner, addr1 } = await loadFixture(upOnlyFixture);
+      const ownerAddress = await owner.getAddress();
+      const addr1Address = await addr1.getAddress();
+
+      expect(await upOnly.balanceOf(ownerAddress)).to.equal(0);
+      await upOnly.mint(1, { value: COST });
+      expect(await upOnly.balanceOf(ownerAddress)).to.equal(1);
+      expect(await upOnly.balanceOf(addr1Address)).to.equal(0);
+      expect(await upOnly.ownerOf(0)).to.equal(ownerAddress);
+      await upOnly.safeTransferFrom(ownerAddress, addr1Address, 0);
+      expect(await upOnly.balanceOf(ownerAddress)).to.equal(0);
+      expect(await upOnly.balanceOf(addr1Address)).to.equal(1);
+      expect(await upOnly.ownerOf(0)).to.equal(addr1Address);
+    });
+
+    it('TODO: Should correctly handle approve transfers', async function () {
+      const { upOnly, owner, addr1, addr2 } = await loadFixture(upOnlyFixture);
+      const ownerAddress = await owner.getAddress();
+      const addr1Address = await addr1.getAddress();
+      const addr2Address = await addr2.getAddress();
+
+      expect(await upOnly.balanceOf(ownerAddress)).to.equal(0);
+      await upOnly.mint(1, { value: COST });
+      expect(await upOnly.balanceOf(ownerAddress)).to.equal(1);
+      expect(await upOnly.balanceOf(addr1Address)).to.equal(0);
+      expect(await upOnly.ownerOf(0)).to.equal(ownerAddress);
+      await upOnly.approve(addr2Address, 0);
+      await upOnly.connect(addr2).transferFrom(ownerAddress, addr1Address, 0);
+      expect(await upOnly.balanceOf(ownerAddress)).to.equal(0);
+      expect(await upOnly.balanceOf(addr1Address)).to.equal(1);
+      expect(await upOnly.ownerOf(0)).to.equal(addr1Address);
+    });
+
+    it('TODO: Should correctly handle isApprovedForAll transfers', async function () {
+      const { upOnly, owner, addr1, addr2 } = await loadFixture(upOnlyFixture);
+      const ownerAddress = await owner.getAddress();
+      const addr1Address = await addr1.getAddress();
+      const addr2Address = await addr2.getAddress();
+
+      expect(await upOnly.balanceOf(ownerAddress)).to.equal(0);
+      await upOnly.mint(1, { value: COST });
+      expect(await upOnly.balanceOf(ownerAddress)).to.equal(1);
+      expect(await upOnly.balanceOf(addr1Address)).to.equal(0);
+      expect(await upOnly.ownerOf(0)).to.equal(ownerAddress);
+      await upOnly.setApprovalForAll(addr2Address, true);
+      await upOnly.connect(addr2).transferFrom(ownerAddress, addr1Address, 0);
+      expect(await upOnly.balanceOf(ownerAddress)).to.equal(0);
+      expect(await upOnly.balanceOf(addr1Address)).to.equal(1);
+      expect(await upOnly.ownerOf(0)).to.equal(addr1Address);
+    });
+
+    it('Should pay royalties on transfer', async function () {
+      const { upOnly, owner, addr1 } = await loadFixture(upOnlyFixture);
+      const ownerAddress = await owner.getAddress();
+      const addr1Address = await addr1.getAddress();
+
+      expect(await upOnly.balanceOf(ownerAddress)).to.equal(0);
+      await upOnly.mint(1, { value: COST });
+      expect(await upOnly.balanceOf(ownerAddress)).to.equal(1);
+      expect(await upOnly.balanceOf(addr1Address)).to.equal(0);
+      expect(await upOnly.ownerOf(0)).to.equal(ownerAddress);
+      await upOnly.transferFrom(ownerAddress, addr1Address, 0);
+      expect(await upOnly.balanceOf(ownerAddress)).to.equal(0);
+      expect(await upOnly.balanceOf(addr1Address)).to.equal(1);
+      expect(await upOnly.ownerOf(0)).to.equal(addr1Address);
+    });
   });
 });
