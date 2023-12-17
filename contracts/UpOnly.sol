@@ -7,6 +7,7 @@ contract UpOnly is ERC721 {
 
   string public baseURI = "IPFS:todo";
   string public baseExtension = ".json";
+  string public royaltyAddress = "0xCdB0Ba3bEE883C1E56b115b39bb0f2315Ce20C16"; // VetDAO - TODO: switch to multisig
   uint256 public cost = 0.1 ether;
   uint256 public supply = 0;
   uint256 public maxSupply = 99;
