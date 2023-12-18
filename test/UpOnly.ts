@@ -294,16 +294,36 @@ describe('UpOnly', function () {
       const { upOnly, owner, addr1 } = await loadFixture(upOnlyFixture);
       const ownerAddress = await owner.getAddress();
       const addr1Address = await addr1.getAddress();
+      const data = ethers.AbiCoder.defaultAbiCoder().encode(['uint256'], [131]);
 
       expect(await upOnly.balanceOf(ownerAddress)).to.equal(0);
       await upOnly.mint(1, { value: COST });
       expect(await upOnly.balanceOf(ownerAddress)).to.equal(1);
       expect(await upOnly.balanceOf(addr1Address)).to.equal(0);
       expect(await upOnly.ownerOf(0)).to.equal(ownerAddress);
-      await upOnly.safeTransferFrom(ownerAddress, addr1Address, 0);
+      await upOnly['safeTransferFrom(address,address,uint256)'](
+        ownerAddress,
+        addr1Address,
+        0
+      );
       expect(await upOnly.balanceOf(ownerAddress)).to.equal(0);
       expect(await upOnly.balanceOf(addr1Address)).to.equal(1);
       expect(await upOnly.ownerOf(0)).to.equal(addr1Address);
+
+      expect(await upOnly.balanceOf(ownerAddress)).to.equal(0);
+      await upOnly.mint(1, { value: COST });
+      expect(await upOnly.balanceOf(ownerAddress)).to.equal(1);
+      expect(await upOnly.balanceOf(addr1Address)).to.equal(1);
+      expect(await upOnly.ownerOf(1)).to.equal(ownerAddress);
+      await upOnly['safeTransferFrom(address,address,uint256,bytes)'](
+        ownerAddress,
+        addr1Address,
+        1,
+        data
+      );
+      expect(await upOnly.balanceOf(ownerAddress)).to.equal(0);
+      expect(await upOnly.balanceOf(addr1Address)).to.equal(2);
+      expect(await upOnly.ownerOf(1)).to.equal(addr1Address);
     });
 
     it('TODO: Should correctly handle approve transfers', async function () {
