@@ -242,10 +242,114 @@ describe('UpOnly', function () {
   });
 
   describe('Offers', function () {
-    it('TODO: Users can make offers', async function () {});
-    it('TODO: Offers must be greater than previous offer', async function () {});
-    it('TODO: Offers less than or equal to previous price fail', async function () {});
-    it('TODO: Users can revoke offers', async function () {});
+    it('Should allow users to make offers', async function () {
+      const { upOnly, owner, addr1 } = await loadFixture(upOnlyFixture);
+      const ownerAddress = await owner.getAddress();
+      const addr1Address = await addr1.getAddress();
+      expect(await upOnly.balanceOf(ownerAddress)).to.equal(0);
+      await upOnly.mint(1, { value: COST });
+      expect(await upOnly.balanceOf(ownerAddress)).to.equal(1);
+      expect(await upOnly.ownerOf(0)).to.equal(ownerAddress);
+      const startBalanceAddr1 = await ethers.provider.getBalance(addr1Address);
+      const startBalanceContract = await ethers.provider.getBalance(upOnly);
+      await upOnly.connect(addr1)['offer(uint256)'](0, { value: COST_TWO });
+      const offerBalanceAddr1 = await ethers.provider.getBalance(addr1Address);
+      const offerBalanceContract = await ethers.provider.getBalance(upOnly);
+      expect(offerBalanceAddr1).to.be.lessThan(startBalanceAddr1);
+      expect(offerBalanceContract).to.be.greaterThan(startBalanceContract);
+    });
+
+    it('Should allow owners to make offers to themselves to transfer', async function () {
+      const { upOnly, owner } = await loadFixture(upOnlyFixture);
+      const ownerAddress = await owner.getAddress();
+      expect(await upOnly.balanceOf(ownerAddress)).to.equal(0);
+      await upOnly.mint(1, { value: COST });
+      expect(await upOnly.balanceOf(ownerAddress)).to.equal(1);
+      expect(await upOnly.ownerOf(0)).to.equal(ownerAddress);
+      const startBalanceAddr1 = await ethers.provider.getBalance(ownerAddress);
+      const startBalanceContract = await ethers.provider.getBalance(upOnly);
+      await upOnly['offer(uint256)'](0, { value: COST_TWO });
+      const offerBalanceAddr1 = await ethers.provider.getBalance(ownerAddress);
+      const offerBalanceContract = await ethers.provider.getBalance(upOnly);
+      expect(offerBalanceAddr1).to.be.lessThan(startBalanceAddr1);
+      expect(offerBalanceContract).to.be.greaterThan(startBalanceContract);
+    });
+
+    it('Should fail if price is less than or equal to previous price', async function () {
+      const { upOnly, owner, addr1 } = await loadFixture(upOnlyFixture);
+      const ownerAddress = await owner.getAddress();
+      expect(await upOnly.balanceOf(ownerAddress)).to.equal(0);
+      await upOnly.mint(1, { value: COST });
+      expect(await upOnly.balanceOf(ownerAddress)).to.equal(1);
+      expect(await upOnly.ownerOf(0)).to.equal(ownerAddress);
+      const startBalanceContract = await ethers.provider.getBalance(upOnly);
+      await expect(
+        upOnly.connect(addr1)['offer(uint256)'](0, { value: COST })
+      ).to.be.revertedWith('TOO CHEAP');
+      const offerBalanceContract = await ethers.provider.getBalance(upOnly);
+      expect(offerBalanceContract).to.be.equal(startBalanceContract);
+    });
+
+    it('Should fail if price is less than or equal to previous offer', async function () {
+      const { upOnly, owner, addr1, addr2 } = await loadFixture(upOnlyFixture);
+      const ownerAddress = await owner.getAddress();
+      expect(await upOnly.balanceOf(ownerAddress)).to.equal(0);
+      await upOnly.mint(1, { value: COST });
+      expect(await upOnly.balanceOf(ownerAddress)).to.equal(1);
+      expect(await upOnly.ownerOf(0)).to.equal(ownerAddress);
+      await upOnly.connect(addr1)['offer(uint256)'](0, { value: COST_TWO });
+      const startBalanceContract = await ethers.provider.getBalance(upOnly);
+      await expect(
+        upOnly.connect(addr2)['offer(uint256)'](0, { value: COST_TWO })
+      ).to.be.revertedWith('TOO LATE');
+      const offerBalanceContract = await ethers.provider.getBalance(upOnly);
+      expect(offerBalanceContract).to.be.equal(startBalanceContract);
+    });
+
+    it('Should allow users to revoke offers', async function () {
+      const { upOnly, owner, addr1 } = await loadFixture(upOnlyFixture);
+      const ownerAddress = await owner.getAddress();
+      const addr1Address = await addr1.getAddress();
+      expect(await upOnly.balanceOf(ownerAddress)).to.equal(0);
+      await upOnly.mint(1, { value: COST });
+      expect(await upOnly.balanceOf(ownerAddress)).to.equal(1);
+      expect(await upOnly.ownerOf(0)).to.equal(ownerAddress);
+      const startBalanceAddr1 = await ethers.provider.getBalance(addr1Address);
+      const startBalanceContract = await ethers.provider.getBalance(upOnly);
+      await upOnly.connect(addr1)['offer(uint256)'](0, { value: COST_TWO });
+      const offerBalanceAddr1 = await ethers.provider.getBalance(addr1Address);
+      const offerBalanceContract = await ethers.provider.getBalance(upOnly);
+      expect(offerBalanceAddr1).to.be.lessThan(startBalanceAddr1);
+      expect(offerBalanceContract).to.be.greaterThan(startBalanceContract);
+      await upOnly.connect(addr1).revoke(0);
+      const endBalanceAddr1 = await ethers.provider.getBalance(addr1Address);
+      const endBalanceContract = await ethers.provider.getBalance(upOnly);
+      expect(endBalanceAddr1).to.be.greaterThan(offerBalanceAddr1);
+      expect(endBalanceContract).to.be.lessThan(offerBalanceContract);
+    });
+
+    it('Should not allow users to revoke other users offers', async function () {
+      const { upOnly, owner, addr1 } = await loadFixture(upOnlyFixture);
+      const ownerAddress = await owner.getAddress();
+      const addr1Address = await addr1.getAddress();
+      expect(await upOnly.balanceOf(ownerAddress)).to.equal(0);
+      await upOnly.mint(1, { value: COST });
+      expect(await upOnly.balanceOf(ownerAddress)).to.equal(1);
+      expect(await upOnly.ownerOf(0)).to.equal(ownerAddress);
+      const startBalanceAddr1 = await ethers.provider.getBalance(addr1Address);
+      const startBalanceContract = await ethers.provider.getBalance(upOnly);
+      await upOnly.connect(addr1)['offer(uint256)'](0, { value: COST_TWO });
+      const offerBalanceAddr1 = await ethers.provider.getBalance(addr1Address);
+      const offerBalanceContract = await ethers.provider.getBalance(upOnly);
+      expect(offerBalanceAddr1).to.be.lessThan(startBalanceAddr1);
+      expect(offerBalanceContract).to.be.greaterThan(startBalanceContract);
+      await expect(upOnly.revoke(0)).to.be.revertedWith('NOT YOU');
+      const endBalanceAddr1 = await ethers.provider.getBalance(addr1Address);
+      const endBalanceContract = await ethers.provider.getBalance(upOnly);
+      expect(endBalanceAddr1).to.be.equal(offerBalanceAddr1);
+      expect(endBalanceContract).to.be.equal(offerBalanceContract);
+    });
+
     it('TODO: Revoking offers returns the money minus royalties', async function () {});
     it('TODO: Revoking offers resets the offer to last price', async function () {});
   });
