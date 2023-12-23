@@ -83,7 +83,9 @@ describe('UpOnly', function () {
       const BELOW_COST = ethers.parseEther('0.099');
       const ownerAddress = await owner.getAddress();
       expect(await upOnly.balanceOf(ownerAddress)).to.equal(0);
-      await expect(upOnly.mint(1, { value: BELOW_COST })).to.be.reverted;
+      await expect(upOnly.mint(1, { value: BELOW_COST })).to.be.revertedWith(
+        'LOW VALUE'
+      );
       expect(await upOnly.balanceOf(ownerAddress)).to.equal(0);
       await expect(upOnly.ownerOf(0)).to.be.reverted;
     });
@@ -152,13 +154,15 @@ describe('UpOnly', function () {
       }
 
       expect(await upOnly.balanceOf(ownerAddress)).to.equal(MAX_MINT_AMOUNT);
-      await expect(upOnly.mint(1, { value: COST })).to.be.reverted;
+      await expect(upOnly.mint(1, { value: COST })).to.be.revertedWith(
+        'TOO GREEDY'
+      );
       expect(await upOnly.balanceOf(ownerAddress)).to.equal(MAX_MINT_AMOUNT);
 
       expect(await upOnly.balanceOf(addr1Address)).to.equal(0);
       await expect(
         upOnly.connect(addr1).mint(MAX_MINT_AMOUNT + 1, { value: COST_SIX })
-      ).to.be.reverted;
+      ).to.be.revertedWith('TOO GREEDY');
       expect(await upOnly.balanceOf(addr1Address)).to.equal(0);
     });
 
@@ -166,7 +170,9 @@ describe('UpOnly', function () {
       const { upOnly, owner } = await loadFixture(upOnlyFixture);
       const ownerAddress = await owner.getAddress();
       expect(await upOnly.balanceOf(ownerAddress)).to.equal(0);
-      await expect(upOnly.mint(2, { value: COST })).to.be.reverted;
+      await expect(upOnly.mint(2, { value: COST })).to.be.revertedWith(
+        'LOW VALUE'
+      );
       expect(await upOnly.balanceOf(ownerAddress)).to.equal(0);
     });
 
@@ -232,7 +238,9 @@ describe('UpOnly', function () {
 
       // Plus 5 equals 100 > 99 => blow up
       expect(await upOnly.balanceOf(ownerAddress)).to.equal(0);
-      await expect(upOnly.mint(5, { value: COST_FIVE })).to.be.reverted;
+      await expect(upOnly.mint(5, { value: COST_FIVE })).to.be.revertedWith(
+        'ALL GONE'
+      );
       expect(await upOnly.balanceOf(ownerAddress)).to.equal(0);
     });
 
