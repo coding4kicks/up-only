@@ -36,11 +36,9 @@ contract UpOnly is ERC721 {
   }
 
   function transferFrom(address from, address to, uint256 tokenId) public override {
-    // TODO: turn on to break => fix
     address offerer = offerers[tokenId];
     _verifyAndPay(tokenId);
     super.transferFrom(from, offerer, tokenId);
-    // super.transferFrom(from, to, tokenId);
   }
 
   function offer(uint256 tokenId, address payable recipient) public payable {
@@ -71,13 +69,6 @@ contract UpOnly is ERC721 {
     require(success, "Failed to send Ether");
   }
 
-  function accept(uint256 tokenId) public {
-    require(msg.sender == ownerOf(tokenId), 'STOP THIEF'); // Note won't work with approve
-    address offerer = offerers[tokenId];
-    _verifyAndPay(tokenId);
-    super.transferFrom(msg.sender, offerer, tokenId);
-  }
-
   function _verifyAndPay(uint256 tokenId) private {
     require(offers[tokenId] > last[tokenId], 'NOT POSSIBLE');
     last[tokenId] = offers[tokenId];
@@ -85,9 +76,11 @@ contract UpOnly is ERC721 {
     // capture values and reset
     uint256 amount = offers[tokenId];
     offerers[tokenId] = payable(address(0));
+
+    // TODO: Pay Royalty
     
     // send eth revert on fail (watch for re-entrancy -> keep transfer eth)
-    (bool success, ) = msg.sender.call{value: amount}("");
+    (bool success, ) = ownerOf(tokenId).call{value: amount}("");
     require(success, "Failed to send Ether");
   }
 }
