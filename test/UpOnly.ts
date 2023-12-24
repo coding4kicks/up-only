@@ -4,7 +4,6 @@ import { ethers } from 'hardhat';
 
 const BASE_URI = 'IPFS:todo';
 const BASE_EXTENSION = '.json';
-const ROYALTY_ADDRESS = '0xCdB0Ba3bEE883C1E56b115b39bb0f2315Ce20C16';
 const COST = ethers.parseEther('0.1');
 const COST_TWO = ethers.parseEther('0.2');
 const COST_FOUR = ethers.parseEther('0.4');
@@ -12,6 +11,8 @@ const COST_FIVE = ethers.parseEther('0.5');
 const COST_SIX = ethers.parseEther('0.6');
 const MAX_SUPPLY = 99;
 const MAX_MINT_AMOUNT = 5;
+const ROYALTY = 3;
+const ROYALTY_ADDRESS = '0xCdB0Ba3bEE883C1E56b115b39bb0f2315Ce20C16';
 
 describe('UpOnly', function () {
   // Fixture to reuse the same setup in every test.
@@ -66,6 +67,11 @@ describe('UpOnly', function () {
     it('Should set the correct max mint amount', async function () {
       const { upOnly } = await loadFixture(upOnlyFixture);
       expect(await upOnly.maxMintAmount()).to.equal(MAX_MINT_AMOUNT);
+    });
+
+    it('Should set the correct royalty', async function () {
+      const { upOnly } = await loadFixture(upOnlyFixture);
+      expect(await upOnly.royalty()).to.equal(ROYALTY);
     });
 
     it('Should set the correct royalty address', async function () {
@@ -184,7 +190,6 @@ describe('UpOnly', function () {
 
     it('Should increment supply when minting a token', async function () {
       const { upOnly, owner } = await loadFixture(upOnlyFixture);
-      const ownerAddress = await owner.getAddress();
       expect(await upOnly.supply()).to.equal(0);
       await upOnly.mint(1, { value: COST });
       expect(await upOnly.supply()).to.equal(1);
@@ -272,12 +277,21 @@ describe('UpOnly', function () {
       const { upOnly, owner, addr1 } = await loadFixture(upOnlyFixture);
       const ownerAddress = await owner.getAddress();
       const addr1Address = await addr1.getAddress();
-      expect(await upOnly.balanceOf(ownerAddress)).to.equal(0);
+
       await upOnly.mint(1, { value: COST });
-      expect(await upOnly.balanceOf(ownerAddress)).to.equal(1);
-      expect(await upOnly.ownerOf(0)).to.equal(ownerAddress);
+
+      await upOnly.connect(addr1)['offer(uint256)'](0, { value: COST_TWO });
+    });
+
+    it('Should increase contract value with an offer', async function () {
+      const { upOnly, owner, addr1 } = await loadFixture(upOnlyFixture);
+      const ownerAddress = await owner.getAddress();
+      const addr1Address = await addr1.getAddress();
+
+      await upOnly.mint(1, { value: COST });
       const startBalanceAddr1 = await ethers.provider.getBalance(addr1Address);
       const startBalanceContract = await ethers.provider.getBalance(upOnly);
+
       await upOnly.connect(addr1)['offer(uint256)'](0, { value: COST_TWO });
       const offerBalanceAddr1 = await ethers.provider.getBalance(addr1Address);
       const offerBalanceContract = await ethers.provider.getBalance(upOnly);
@@ -289,15 +303,17 @@ describe('UpOnly', function () {
       const { upOnly, owner } = await loadFixture(upOnlyFixture);
       const ownerAddress = await owner.getAddress();
       expect(await upOnly.balanceOf(ownerAddress)).to.equal(0);
+
       await upOnly.mint(1, { value: COST });
       expect(await upOnly.balanceOf(ownerAddress)).to.equal(1);
       expect(await upOnly.ownerOf(0)).to.equal(ownerAddress);
-      const startBalanceAddr1 = await ethers.provider.getBalance(ownerAddress);
+      const startBalanceOwner = await ethers.provider.getBalance(ownerAddress);
       const startBalanceContract = await ethers.provider.getBalance(upOnly);
+
       await upOnly['offer(uint256)'](0, { value: COST_TWO });
       const offerBalanceAddr1 = await ethers.provider.getBalance(ownerAddress);
       const offerBalanceContract = await ethers.provider.getBalance(upOnly);
-      expect(offerBalanceAddr1).to.be.lessThan(startBalanceAddr1);
+      expect(offerBalanceAddr1).to.be.lessThan(startBalanceOwner);
       expect(offerBalanceContract).to.be.greaterThan(startBalanceContract);
     });
 
@@ -305,10 +321,12 @@ describe('UpOnly', function () {
       const { upOnly, owner, addr1 } = await loadFixture(upOnlyFixture);
       const ownerAddress = await owner.getAddress();
       expect(await upOnly.balanceOf(ownerAddress)).to.equal(0);
+
       await upOnly.mint(1, { value: COST });
       expect(await upOnly.balanceOf(ownerAddress)).to.equal(1);
       expect(await upOnly.ownerOf(0)).to.equal(ownerAddress);
       const startBalanceContract = await ethers.provider.getBalance(upOnly);
+
       await expect(
         upOnly.connect(addr1)['offer(uint256)'](0, { value: COST })
       ).to.be.revertedWith('TOO CHEAP');
@@ -320,11 +338,14 @@ describe('UpOnly', function () {
       const { upOnly, owner, addr1, addr2 } = await loadFixture(upOnlyFixture);
       const ownerAddress = await owner.getAddress();
       expect(await upOnly.balanceOf(ownerAddress)).to.equal(0);
+
       await upOnly.mint(1, { value: COST });
       expect(await upOnly.balanceOf(ownerAddress)).to.equal(1);
       expect(await upOnly.ownerOf(0)).to.equal(ownerAddress);
+
       await upOnly.connect(addr1)['offer(uint256)'](0, { value: COST_TWO });
       const startBalanceContract = await ethers.provider.getBalance(upOnly);
+
       await expect(
         upOnly.connect(addr2)['offer(uint256)'](0, { value: COST_TWO })
       ).to.be.revertedWith('TOO LATE');
@@ -337,16 +358,19 @@ describe('UpOnly', function () {
       const ownerAddress = await owner.getAddress();
       const addr1Address = await addr1.getAddress();
       expect(await upOnly.balanceOf(ownerAddress)).to.equal(0);
+
       await upOnly.mint(1, { value: COST });
       expect(await upOnly.balanceOf(ownerAddress)).to.equal(1);
       expect(await upOnly.ownerOf(0)).to.equal(ownerAddress);
       const startBalanceAddr1 = await ethers.provider.getBalance(addr1Address);
       const startBalanceContract = await ethers.provider.getBalance(upOnly);
+
       await upOnly.connect(addr1)['offer(uint256)'](0, { value: COST_TWO });
       const offerBalanceAddr1 = await ethers.provider.getBalance(addr1Address);
       const offerBalanceContract = await ethers.provider.getBalance(upOnly);
       expect(offerBalanceAddr1).to.be.lessThan(startBalanceAddr1);
       expect(offerBalanceContract).to.be.greaterThan(startBalanceContract);
+
       await upOnly.connect(addr1).revoke(0);
       const endBalanceAddr1 = await ethers.provider.getBalance(addr1Address);
       const endBalanceContract = await ethers.provider.getBalance(upOnly);
@@ -359,16 +383,19 @@ describe('UpOnly', function () {
       const ownerAddress = await owner.getAddress();
       const addr1Address = await addr1.getAddress();
       expect(await upOnly.balanceOf(ownerAddress)).to.equal(0);
+
       await upOnly.mint(1, { value: COST });
       expect(await upOnly.balanceOf(ownerAddress)).to.equal(1);
       expect(await upOnly.ownerOf(0)).to.equal(ownerAddress);
       const startBalanceAddr1 = await ethers.provider.getBalance(addr1Address);
       const startBalanceContract = await ethers.provider.getBalance(upOnly);
+
       await upOnly.connect(addr1)['offer(uint256)'](0, { value: COST_TWO });
       const offerBalanceAddr1 = await ethers.provider.getBalance(addr1Address);
       const offerBalanceContract = await ethers.provider.getBalance(upOnly);
       expect(offerBalanceAddr1).to.be.lessThan(startBalanceAddr1);
       expect(offerBalanceContract).to.be.greaterThan(startBalanceContract);
+
       await expect(upOnly.revoke(0)).to.be.revertedWith('NOT YOU');
       const endBalanceAddr1 = await ethers.provider.getBalance(addr1Address);
       const endBalanceContract = await ethers.provider.getBalance(upOnly);
