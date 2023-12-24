@@ -9,11 +9,12 @@ contract UpOnly is ERC721 {
 
   string public baseURI = "IPFS:todo";
   string public baseExtension = ".json";
-  string public royaltyAddress = "0xCdB0Ba3bEE883C1E56b115b39bb0f2315Ce20C16"; // VetDAO - TODO: switch to multisig
   uint256 public cost = 0.1 ether;
   uint256 public supply = 0;
   uint256 public maxSupply = 99;
   uint256 public maxMintAmount = 5;
+  uint256 public royalty = 3; // percent
+  address payable public royaltyAddress = payable(0xCdB0Ba3bEE883C1E56b115b39bb0f2315Ce20C16); // VetDAO - TODO: multisig
   mapping(uint256 => uint256) public last;
   mapping(uint256 => uint256) public offers;
   mapping(uint256 => address payable) public offerers;
@@ -33,6 +34,10 @@ contract UpOnly is ERC721 {
       last[tokenId] = cost;
       _safeMint(msg.sender, tokenId);
     }
+
+    // send royalties
+    (bool success, ) = royaltyAddress.call{value: msg.value}("");
+    require(success, "Failed to pay mint");
   }
 
   function transferFrom(address from, address to, uint256 tokenId) public override {
@@ -56,17 +61,20 @@ contract UpOnly is ERC721 {
   function revoke(uint256 tokenId) public payable {
     require(msg.sender == offerers[tokenId], "NOT YOU");
 
-    // TODO: pay royalty as penalty to prevent griefers who outbid then revoke since we reset to last
-
     // capture values and reset
     address payable offerer = offerers[tokenId];
     uint256 amount = offers[tokenId];
+    uint256 fee = amount / 100; // 1% royalty on revoke
     offerers[tokenId] = payable(address(0));
     offers[tokenId] = last[tokenId];
 
-    // send eth revert on fail
-    (bool success, ) = offerer.call{value: amount}("");
-    require(success, "Failed to send Ether");
+    // return offer
+    (bool success, ) = offerer.call{value: amount - fee}("");
+    require(success, "Failed to return offer");
+
+    // send royalties
+    (success, ) = royaltyAddress.call{value: fee}("");
+    require(success, "Failed to pay royalties");
   }
 
   function _verifyAndPay(uint256 tokenId) private {
@@ -75,13 +83,16 @@ contract UpOnly is ERC721 {
 
     // capture values and reset
     uint256 amount = offers[tokenId];
+    uint256 fee = amount * royalty / 100; // 3% royalty on transfer
     offerers[tokenId] = payable(address(0));
-
-    // TODO: Pay Royalty
     
     // send eth revert on fail (watch for re-entrancy -> keep transfer eth)
-    (bool success, ) = ownerOf(tokenId).call{value: amount}("");
-    require(success, "Failed to send Ether");
+    (bool success, ) = ownerOf(tokenId).call{value: amount - fee}("");
+    require(success, "Failed to send payment");
+
+    // send royalties
+    (success, ) = royaltyAddress.call{value: fee}("");
+    require(success, "Failed to pay royalties");
   }
 }
 

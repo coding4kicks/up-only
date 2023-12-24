@@ -4,6 +4,7 @@ import { ethers } from 'hardhat';
 
 const BASE_URI = 'IPFS:todo';
 const BASE_EXTENSION = '.json';
+const ROYALTY_ADDRESS = '0xCdB0Ba3bEE883C1E56b115b39bb0f2315Ce20C16';
 const COST = ethers.parseEther('0.1');
 const COST_TWO = ethers.parseEther('0.2');
 const COST_FOUR = ethers.parseEther('0.4');
@@ -13,7 +14,7 @@ const MAX_SUPPLY = 99;
 const MAX_MINT_AMOUNT = 5;
 
 describe('UpOnly', function () {
-  // We define a fixture to reuse the same setup in every test.
+  // Fixture to reuse the same setup in every test.
   // We use loadFixture to run this setup once, snapshot that state,
   // and reset Hardhat Network to that snapshot in every test.
   async function upOnlyFixture() {
@@ -65,6 +66,11 @@ describe('UpOnly', function () {
     it('Should set the correct max mint amount', async function () {
       const { upOnly } = await loadFixture(upOnlyFixture);
       expect(await upOnly.maxMintAmount()).to.equal(MAX_MINT_AMOUNT);
+    });
+
+    it('Should set the correct royalty address', async function () {
+      const { upOnly } = await loadFixture(upOnlyFixture);
+      expect(await upOnly.royaltyAddress()).to.equal(ROYALTY_ADDRESS);
     });
   });
 
@@ -244,8 +250,20 @@ describe('UpOnly', function () {
       expect(await upOnly.balanceOf(ownerAddress)).to.equal(0);
     });
 
-    it('TODO: Should tranfer mint value to royalty wallet', async function () {
-      // 'TODO';
+    it('Should tranfer mint value to royalty wallet', async function () {
+      const { upOnly, owner } = await loadFixture(upOnlyFixture);
+      const ownerAddress = await owner.getAddress();
+      expect(await upOnly.balanceOf(ownerAddress)).to.equal(0);
+      const rolyaltyBalanceBefore = await ethers.provider.getBalance(
+        ROYALTY_ADDRESS
+      );
+      await upOnly.mint(1, { value: COST });
+      expect(await upOnly.balanceOf(ownerAddress)).to.equal(1);
+      expect(await upOnly.ownerOf(0)).to.equal(ownerAddress);
+      const rolyaltyBalanceAfter = await ethers.provider.getBalance(
+        ROYALTY_ADDRESS
+      );
+      expect(rolyaltyBalanceAfter).to.be.greaterThan(rolyaltyBalanceBefore);
     });
   });
 
@@ -358,8 +376,52 @@ describe('UpOnly', function () {
       expect(endBalanceContract).to.be.equal(offerBalanceContract);
     });
 
-    it('TODO: Revoking offers returns the money minus royalties', async function () {});
-    it('TODO: Revoking offers resets the offer to last price', async function () {});
+    it('Should return the money minus royalties when revoking', async function () {
+      const { upOnly, owner, addr1 } = await loadFixture(upOnlyFixture);
+      const ownerAddress = await owner.getAddress();
+      const addr1Address = await addr1.getAddress();
+      expect(await upOnly.balanceOf(ownerAddress)).to.equal(0);
+
+      await upOnly.mint(1, { value: COST });
+      expect(await upOnly.balanceOf(ownerAddress)).to.equal(1);
+      expect(await upOnly.ownerOf(0)).to.equal(ownerAddress);
+      const startBalanceAddr1 = await ethers.provider.getBalance(addr1Address);
+      const startBalanceContract = await ethers.provider.getBalance(upOnly);
+
+      await upOnly.connect(addr1)['offer(uint256)'](0, { value: COST_TWO });
+      const offerBalanceAddr1 = await ethers.provider.getBalance(addr1Address);
+      const offerBalanceContract = await ethers.provider.getBalance(upOnly);
+      expect(offerBalanceAddr1).to.be.lessThan(startBalanceAddr1);
+      expect(offerBalanceContract).to.be.greaterThan(startBalanceContract);
+      const rolyaltyBalanceBefore = await ethers.provider.getBalance(
+        ROYALTY_ADDRESS
+      );
+
+      await upOnly.connect(addr1).revoke(0);
+      const endBalanceAddr1 = await ethers.provider.getBalance(addr1Address);
+      const endBalanceContract = await ethers.provider.getBalance(upOnly);
+      expect(endBalanceAddr1).to.be.greaterThan(offerBalanceAddr1);
+      expect(endBalanceContract).to.be.lessThan(offerBalanceContract);
+
+      const rolyaltyBalanceAfter = await ethers.provider.getBalance(
+        ROYALTY_ADDRESS
+      );
+      expect(rolyaltyBalanceAfter).to.be.greaterThan(rolyaltyBalanceBefore);
+    });
+
+    it('Shoud reset offer to last price when revoking an offer', async function () {
+      const { upOnly, owner, addr1 } = await loadFixture(upOnlyFixture);
+      const ownerAddress = await owner.getAddress();
+      expect(await upOnly.balanceOf(ownerAddress)).to.equal(0);
+
+      await upOnly.mint(1, { value: COST });
+
+      await upOnly.connect(addr1)['offer(uint256)'](0, { value: COST_TWO });
+      expect(await upOnly.offers(0)).to.be.equal(COST_TWO);
+
+      await upOnly.connect(addr1).revoke(0);
+      expect(await upOnly.offers(0)).to.be.equal(COST);
+    });
   });
 
   describe('Transfers', function () {
@@ -623,6 +685,44 @@ describe('UpOnly', function () {
       expect(await upOnly.ownerOf(0)).to.equal(ownerAddress);
     });
 
-    it('TODO: Should pay royalties on transfer', async function () {});
+    it('Should pay royalties on transfer', async function () {
+      const { upOnly, owner, addr1 } = await loadFixture(upOnlyFixture);
+      const ownerAddress = await owner.getAddress();
+      const addr1Address = await addr1.getAddress();
+      expect(await upOnly.balanceOf(ownerAddress)).to.equal(0);
+
+      await upOnly.mint(1, { value: COST });
+      expect(await upOnly.balanceOf(ownerAddress)).to.equal(1);
+      expect(await upOnly.balanceOf(addr1Address)).to.equal(0);
+      expect(await upOnly.ownerOf(0)).to.equal(ownerAddress);
+      const startBalanceAddr1 = await ethers.provider.getBalance(addr1Address);
+      const startBalanceContract = await ethers.provider.getBalance(upOnly);
+
+      await upOnly.connect(addr1)['offer(uint256)'](0, { value: COST_TWO });
+      const offerBalanceAddr1 = await ethers.provider.getBalance(addr1Address);
+      const offerBalanceContract = await ethers.provider.getBalance(upOnly);
+      const offerBalanceOwner = await ethers.provider.getBalance(ownerAddress);
+      expect(offerBalanceAddr1).to.be.lessThan(startBalanceAddr1);
+      expect(offerBalanceContract).to.be.greaterThan(startBalanceContract);
+
+      const rolyaltyBalanceBefore = await ethers.provider.getBalance(
+        ROYALTY_ADDRESS
+      );
+
+      await upOnly.transferFrom(ownerAddress, addr1Address, 0);
+      const rolyaltyBalanceAfter = await ethers.provider.getBalance(
+        ROYALTY_ADDRESS
+      );
+      expect(rolyaltyBalanceAfter).to.be.greaterThan(rolyaltyBalanceBefore);
+      const transferBalanceOwner = await ethers.provider.getBalance(
+        ownerAddress
+      );
+      const transferBalanceContract = await ethers.provider.getBalance(upOnly);
+      expect(transferBalanceOwner).to.be.greaterThan(offerBalanceOwner);
+      expect(transferBalanceContract).to.be.lessThan(offerBalanceContract);
+      expect(await upOnly.balanceOf(ownerAddress)).to.equal(0);
+      expect(await upOnly.balanceOf(addr1Address)).to.equal(1);
+      expect(await upOnly.ownerOf(0)).to.equal(addr1Address);
+    });
   });
 });
