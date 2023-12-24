@@ -7,7 +7,7 @@ import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 
 contract UpOnly is ERC721 {
 
-  string public baseURI = "IPFS:todo";
+  string public baseURI = "IPFS:todo"; // TODO: Collection details
   string public baseExtension = ".json";
   uint256 public cost = 0.1 ether;
   uint256 public supply = 0;
@@ -19,45 +19,68 @@ contract UpOnly is ERC721 {
   mapping(uint256 => uint256) public offers;
   mapping(uint256 => address payable) public offerers;
 
+  // Mint event documenting first token ID, new token owner, mint amount, total cost, and remaining supply
+  event Mint(uint256 indexed token, address owner, uint256 amount, uint256 cost, uint256 supply);
+
+  // Offer event documenting token ID, recipient, and offer amount
+  event Offer(uint256 indexed token, address recipient, uint256 offer);
+
+  // Revoke event documenting the tokenId, the refund recipient, refund total amount, and royalty fee.
+  event Revoke(uint256 indexed token, address recipient, uint256 refund, uint256 fee);
+
+  // VerifyPay event documenting the tokenId, the offerer, the owner to be paid, the accepted offer amount, and royalty fee.
+  event VerifyPay(uint256 indexed token, address offerer, address payee, uint256 offer, uint256 fee);
+
+  event VerifyPay();
+
   constructor() ERC721("Test Flight", "UP") {
   }
 
-  function mint(uint256 _mintAmount) public payable {
-    require(_mintAmount > 0, "WHY ZERO");
-    require(_mintAmount + balanceOf(msg.sender) <= maxMintAmount, "TOO GREEDY");
-    require(supply + _mintAmount <= maxSupply, "ALL GONE");
-    require(msg.value >= cost * _mintAmount, "LOW VALUE");
+  // Mint `mintAmount` to `mgs.sender` at `cost` per token up to `maxMintAmount` and `maxSupply`
+  function mint(uint256 mintAmount) public payable {
+    require(mintAmount > 0, "WHY ZERO");
+    require(mintAmount + balanceOf(msg.sender) <= maxMintAmount, "TOO GREEDY");
+    require(supply + mintAmount <= maxSupply, "ALL GONE");
+    require(msg.value >= cost * mintAmount, "LOW VALUE");
 
-    for (uint256 i = 1; i <= _mintAmount; i++) {
-      uint256 tokenId = supply;
-      supply++;
+    uint256 tokenId = supply;
+    for (uint256 i = 0; i < mintAmount; i++) {
       last[tokenId] = cost;
-      _safeMint(msg.sender, tokenId);
+      _safeMint(msg.sender, tokenId + i);
     }
+    supply = supply + mintAmount;
 
     // send royalties
     (bool success, ) = royaltyAddress.call{value: msg.value}("");
     require(success, "Failed to pay mint");
+
+    emit Mint(tokenId, msg.sender, mintAmount, msg.value, supply);
   }
 
+  // Override transferFrom of OZ ERC-721. 
+  // Ignore `to` address and send token to `offerer` after verification & payment
   function transferFrom(address from, address to, uint256 tokenId) public override {
     address offerer = offerers[tokenId];
     _verifyAndPay(tokenId);
     super.transferFrom(from, offerer, tokenId);
   }
 
+  // Offer a higher price for a token and set who gets the token or refund
   function offer(uint256 tokenId, address payable recipient) public payable {
     require(msg.value > last[tokenId], "TOO CHEAP");
     require(msg.value > offers[tokenId], "TOO LATE");
     require(recipient != address(0));
     offerers[tokenId] = recipient;
     offers[tokenId] = msg.value;
+
+    emit Offer(tokenId, recipient, msg.value);
   }
 
   function offer(uint256 tokenId) public payable {
     offer(tokenId, payable(msg.sender));
   }
 
+  // Revoke an offer and get a refund minus a fee
   function revoke(uint256 tokenId) public payable {
     require(msg.sender == offerers[tokenId], "NOT YOU");
 
@@ -75,6 +98,8 @@ contract UpOnly is ERC721 {
     // send royalties
     (success, ) = royaltyAddress.call{value: fee}("");
     require(success, "Failed to pay royalties");
+
+    emit Revoke(tokenId, offerer, amount, fee);
   }
 
   function _verifyAndPay(uint256 tokenId) private {
@@ -84,15 +109,19 @@ contract UpOnly is ERC721 {
     // capture values and reset
     uint256 amount = offers[tokenId];
     uint256 fee = amount * royalty / 100; // 3% royalty on transfer
+    address offerer = offerers[tokenId];
+    address owner = ownerOf(tokenId);
     offerers[tokenId] = payable(address(0));
     
     // send eth revert on fail (watch for re-entrancy -> keep transfer eth)
-    (bool success, ) = ownerOf(tokenId).call{value: amount - fee}("");
+    (bool success, ) = owner.call{value: amount - fee}("");
     require(success, "Failed to send payment");
 
     // send royalties
     (success, ) = royaltyAddress.call{value: fee}("");
     require(success, "Failed to pay royalties");
+
+    emit VerifyPay(tokenId, offerer, owner, amount, fee);
   }
 }
 
