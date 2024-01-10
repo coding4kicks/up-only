@@ -20,18 +20,16 @@ contract UpOnly is ERC721 {
   mapping(uint256 => address payable) public offerers;
 
   // Mint event documenting first token ID, new token owner, mint amount, total cost, and remaining supply
-  event Mint(uint256 indexed token, address owner, uint256 amount, uint256 cost, uint256 supply);
+  event Mint(uint256 indexed token, address indexed owner, uint256 amount, uint256 cost, uint256 supply);
 
-  // Offer event documenting token ID, recipient, and offer amount
-  event Offer(uint256 indexed token, address recipient, uint256 offer);
+  // Offer event documenting token ID, recipient, token owner, and offer amount
+  event Offer(uint256 indexed token, address indexed recipient, address indexed owner, uint256 offer);
 
-  // Revoke event documenting the tokenId, the refund recipient, refund total amount, and royalty fee.
-  event Revoke(uint256 indexed token, address recipient, uint256 refund, uint256 fee);
+  // Revoke event documenting the tokenId, the refund recipient, token owner, refund total amount, and royalty fee.
+  event Revoke(uint256 indexed token, address indexed recipient, address indexed owner, uint256 refund, uint256 fee);
 
   // VerifyPay event documenting the tokenId, the offerer, the owner to be paid, the accepted offer amount, and royalty fee.
-  event VerifyPay(uint256 indexed token, address offerer, address payee, uint256 offer, uint256 fee);
-
-  event VerifyPay();
+  event VerifyPay(uint256 indexed token, address indexed offerer, address indexed payee, uint256 offer, uint256 fee);
 
   constructor() ERC721("Test Flight", "UP") {
   }
@@ -73,7 +71,7 @@ contract UpOnly is ERC721 {
     offerers[tokenId] = recipient;
     offers[tokenId] = msg.value;
 
-    emit Offer(tokenId, recipient, msg.value);
+    emit Offer(tokenId, recipient, ownerOf(tokenId), msg.value);
   }
 
   function offer(uint256 tokenId) public payable {
@@ -99,7 +97,7 @@ contract UpOnly is ERC721 {
     (success, ) = royaltyAddress.call{value: fee}("");
     require(success, "Failed to pay royalties");
 
-    emit Revoke(tokenId, offerer, amount, fee);
+    emit Revoke(tokenId, offerer, ownerOf(tokenId), amount, fee);
   }
 
   function _verifyAndPay(uint256 tokenId) private {
