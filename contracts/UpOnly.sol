@@ -28,8 +28,8 @@ contract UpOnly is ERC721 {
   // Revoke event documenting the tokenId, the refund recipient, token owner, refund total amount, and royalty fee.
   event Revoke(uint256 indexed token, address indexed recipient, address indexed owner, uint256 refund, uint256 fee);
 
-  // VerifyPay event documenting the tokenId, the offerer, the owner to be paid, the accepted offer amount, and royalty fee.
-  event VerifyPay(uint256 indexed token, address indexed offerer, address indexed payee, uint256 offer, uint256 fee);
+  // Payout event documenting the tokenId, the offerer, the owner to be paid, the accepted offer amount, and royalty fee.
+  event Payout(uint256 indexed token, address indexed offerer, address indexed payee, uint256 offer, uint256 fee);
 
   constructor() ERC721("Test Flight", "UP") {
   }
@@ -59,7 +59,7 @@ contract UpOnly is ERC721 {
   // Ignore `to` address and send token to `offerer` after verification & payment
   function transferFrom(address from, address to, uint256 tokenId) public override {
     address offerer = offerers[tokenId];
-    _verifyAndPay(tokenId);
+    _payout(tokenId);
     super.transferFrom(from, offerer, tokenId);
   }
 
@@ -100,7 +100,7 @@ contract UpOnly is ERC721 {
     emit Revoke(tokenId, offerer, ownerOf(tokenId), amount, fee);
   }
 
-  function _verifyAndPay(uint256 tokenId) private {
+  function _payout(uint256 tokenId) private {
     require(offers[tokenId] > last[tokenId], 'NOT POSSIBLE');
     last[tokenId] = offers[tokenId];
 
@@ -119,7 +119,7 @@ contract UpOnly is ERC721 {
     (success, ) = royaltyAddress.call{value: fee}("");
     require(success, "Failed to pay royalties");
 
-    emit VerifyPay(tokenId, offerer, owner, amount, fee);
+    emit Payout(tokenId, offerer, owner, amount, fee);
   }
 }
 

@@ -14,8 +14,6 @@ const MAX_MINT_AMOUNT = 5;
 const ROYALTY = 3;
 const ROYALTY_ADDRESS = '0xCdB0Ba3bEE883C1E56b115b39bb0f2315Ce20C16';
 
-// TODO: Test Events
-
 describe('UpOnly', function () {
   // Fixture to reuse the same setup in every test.
   // We use loadFixture to run this setup once, snapshot that state,
@@ -786,7 +784,7 @@ describe('UpOnly', function () {
       expect(await upOnly.ownerOf(0)).to.equal(addr1Address);
     });
 
-    it('Should emit a VerifyPay event', async function () {
+    it('Should emit a Payout event', async function () {
       const { upOnly, owner, addr1 } = await loadFixture(upOnlyFixture);
       const ownerAddress = await owner.getAddress();
       const addr1Address = await addr1.getAddress();
@@ -797,7 +795,7 @@ describe('UpOnly', function () {
       await upOnly.connect(addr1)['offer(uint256)'](0, { value: COST_TWO });
 
       await expect(upOnly.transferFrom(ownerAddress, addr1Address, 0))
-        .to.emit(upOnly, 'VerifyPay')
+        .to.emit(upOnly, 'Payout')
         .withArgs(0, addr1Address, ownerAddress, COST_TWO, FEE);
     });
   });
