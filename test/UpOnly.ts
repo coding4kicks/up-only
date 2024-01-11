@@ -286,17 +286,12 @@ describe('UpOnly', function () {
   describe('Offers', function () {
     it('Should allow users to make offers', async function () {
       const { upOnly, owner, addr1 } = await loadFixture(upOnlyFixture);
-      const ownerAddress = await owner.getAddress();
-      const addr1Address = await addr1.getAddress();
-
       await upOnly.mint(1, { value: COST });
-
       await upOnly.connect(addr1)['offer(uint256)'](0, { value: COST_TWO });
     });
 
     it('Should increase contract value with an offer', async function () {
       const { upOnly, owner, addr1 } = await loadFixture(upOnlyFixture);
-      const ownerAddress = await owner.getAddress();
       const addr1Address = await addr1.getAddress();
 
       await upOnly.mint(1, { value: COST });
