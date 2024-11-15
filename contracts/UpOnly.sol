@@ -14,7 +14,7 @@ contract UpOnly is ERC721 {
   uint256 public maxSupply = 99;
   uint256 public maxMintAmount = 5;
   uint256 public royalty = 3; // percent
-  address payable public royaltyAddress = payable(0xCdB0Ba3bEE883C1E56b115b39bb0f2315Ce20C16); // VetDAO - TODO: multisig
+  address payable public royaltyAddress = payable(0xCdB0Ba3bEE883C1E56b115b39bb0f2315Ce20C16); // VetDAO - TODO: multisig, allow update later
   mapping(uint256 => uint256) public last;
   mapping(uint256 => uint256) public offers;
   mapping(uint256 => address payable) public offerers;
@@ -71,6 +71,10 @@ contract UpOnly is ERC721 {
     offerers[tokenId] = recipient;
     offers[tokenId] = msg.value;
 
+    // TODO: FTX token
+    // // Let the (extra) tokens be free (way to create more like this after?)
+    // if (tokenId >= MaxSupply) super.approve(recipient)
+
     emit Offer(tokenId, recipient, ownerOf(tokenId), msg.value);
   }
 
@@ -89,7 +93,7 @@ contract UpOnly is ERC721 {
     offerers[tokenId] = payable(address(0));
     offers[tokenId] = last[tokenId];
 
-    // return offer
+    // return offer - TODO: could this grief with a failure
     (bool success, ) = offerer.call{value: amount - fee}("");
     require(success, "Failed to return offer");
 
@@ -111,7 +115,7 @@ contract UpOnly is ERC721 {
     address owner = ownerOf(tokenId);
     offerers[tokenId] = payable(address(0));
     
-    // send eth revert on fail (watch for re-entrancy -> keep transfer eth)
+    // send eth revert on fail (watch for re-entrancy -> keep transfer eth) - TODO: could this grief with a failure
     (bool success, ) = owner.call{value: amount - fee}("");
     require(success, "Failed to send payment");
 

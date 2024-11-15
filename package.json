@@ -2,7 +2,6 @@
   "name": "up-only",
   "version": "1.0.0",
   "description": "Up Only NFT contracts.",
-  "main": "index.js",
   "scripts": {
     "test": "npx hardhat test"
   },
