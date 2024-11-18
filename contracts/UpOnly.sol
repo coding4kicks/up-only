@@ -11,7 +11,7 @@ contract UpOnly is ERC721 {
   string public baseExtension = ".json";
   uint256 public cost = 0.1 ether;
   uint256 public supply = 0;
-  uint256 public maxSupply = 99;
+  uint256 public maxSupply = 131;
   uint256 public maxMintAmount = 5;
   uint256 public royalty = 3; // percent
   address payable public royaltyAddress = payable(0xCdB0Ba3bEE883C1E56b115b39bb0f2315Ce20C16); // VetDAO - TODO: multisig, allow update later
@@ -19,7 +19,7 @@ contract UpOnly is ERC721 {
   mapping(uint256 => uint256) public offers;
   mapping(uint256 => address payable) public offerers;
 
-  // Mint event documenting first token ID, new token owner, mint amount, total cost, and remaining supply
+  // Mint event documenting first minted token ID, new token owner, mint amount, total cost, and remaining supply
   event Mint(uint256 indexed token, address indexed owner, uint256 amount, uint256 cost, uint256 supply);
 
   // Offer event documenting token ID, recipient, token owner, and offer amount
@@ -39,7 +39,7 @@ contract UpOnly is ERC721 {
     require(mintAmount > 0, "WHY ZERO");
     require(mintAmount + balanceOf(msg.sender) <= maxMintAmount, "TOO GREEDY");
     require(supply + mintAmount <= maxSupply, "ALL GONE");
-    require(msg.value >= cost * mintAmount, "LOW VALUE");
+    require(msg.value >= cost * mintAmount, "TOO CHEAP");
 
     uint256 tokenId = supply;
     for (uint256 i = 0; i < mintAmount; i++) {
@@ -48,7 +48,7 @@ contract UpOnly is ERC721 {
     }
     supply = supply + mintAmount;
 
-    // send royalties
+    // send royalties - whitelist address or add re-entrency protection
     (bool success, ) = royaltyAddress.call{value: msg.value}("");
     require(success, "Failed to pay mint");
 
