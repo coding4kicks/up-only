@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "description": "Up Only NFT contracts.",
   "scripts": {
-    "test": "npx hardhat test"
+    "test": "npx hardhat test",
+    "clean": "npx hardhat clean"
   },
   "author": "coding4kicks",
   "license": "MIT",

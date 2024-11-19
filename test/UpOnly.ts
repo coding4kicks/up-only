@@ -559,7 +559,7 @@ describe('UpOnly', function () {
       expect(await upOnly.ownerOf(0)).to.equal(addr1Address);
     });
 
-    it('Should not allow transferFrom without a valid offer', async function () {
+    it('Should not allow safeTransferFrom without a valid offer', async function () {
       const { upOnly, owner, addr1 } = await loadFixture(upOnlyFixture);
       const ownerAddress = await owner.getAddress();
       const addr1Address = await addr1.getAddress();

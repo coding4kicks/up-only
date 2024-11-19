@@ -72,7 +72,6 @@ contract UpOnly is ERC721 {
     offers[tokenId] = msg.value;
 
     // TODO: FTX token
-    // // Let the (extra) tokens be free (way to create more like this after?)
     // if (tokenId >= MaxSupply) super.approve(recipient)
 
     emit Offer(tokenId, recipient, ownerOf(tokenId), msg.value);
@@ -93,7 +92,9 @@ contract UpOnly is ERC721 {
     offerers[tokenId] = payable(address(0));
     offers[tokenId] = last[tokenId];
 
-    // return offer - TODO: could this grief with a failure
+    // return offer - TODO: could this grief with a failure & possible reentrancy 
+    // reentrancy -> attacker makes offer, revokes, accepts offer through call, then revoke still returns money.
+    // TODO: add reentrancy guard prior to launch
     (bool success, ) = offerer.call{value: amount - fee}("");
     require(success, "Failed to return offer");
 
