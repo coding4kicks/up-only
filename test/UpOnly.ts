@@ -200,8 +200,6 @@ describe('UpOnly', function () {
         upOnlyFixture
       );
       const ownerAddress = await owner.getAddress();
-      const addr1Address = await addr1.getAddress();
-      const addr2Address = await addr2.getAddress();
 
       // Mint 130
       for (let i = 0; i < 26; i++) {
@@ -219,8 +217,6 @@ describe('UpOnly', function () {
         upOnlyFixture
       );
       const ownerAddress = await owner.getAddress();
-      const addr1Address = await addr1.getAddress();
-      const addr2Address = await addr2.getAddress();
 
       // Mint 130
       for (let i = 0; i < 26; i++) {
@@ -777,6 +773,36 @@ describe('UpOnly', function () {
       await expect(upOnly.transferFrom(ownerAddress, addr1Address, 0))
         .to.emit(upOnly, 'Payout')
         .withArgs(0, addr1Address, ownerAddress, COST_TWO, FEE);
+    });
+
+    it('Should force transferFrom with valid offer for easter egg', async function () {
+      const { upOnly, owner, addr1, addr2, addresses } = await loadFixture(
+        upOnlyFixture
+      );
+      const ownerAddress = await owner.getAddress();
+      const addr1Address = await addr1.getAddress();
+      expect(await upOnly.balanceOf(ownerAddress)).to.equal(0);
+
+      // Mint 130
+      for (let i = 0; i < 26; i++) {
+        await upOnly.connect(addresses[i]).mint(5, { value: COST_FIVE });
+      }
+
+      await upOnly.mint(1, { value: COST });
+      expect(await upOnly.balanceOf(ownerAddress)).to.equal(1);
+      expect(await upOnly.balanceOf(addr1Address)).to.equal(0);
+      expect(await upOnly.ownerOf(130)).to.equal(ownerAddress);
+      const startBalanceAddr1 = await ethers.provider.getBalance(addr1Address);
+      const startBalanceOwner = await ethers.provider.getBalance(ownerAddress);
+
+      await upOnly.connect(addr1)['offer(uint256)'](130, { value: COST_TWO });
+      const offerBalanceAddr1 = await ethers.provider.getBalance(addr1Address);
+      const offerBalanceOwner = await ethers.provider.getBalance(ownerAddress);
+      expect(offerBalanceAddr1).to.be.lessThan(startBalanceAddr1);
+      expect(offerBalanceOwner).to.be.greaterThan(startBalanceOwner);
+      expect(await upOnly.balanceOf(ownerAddress)).to.equal(0);
+      expect(await upOnly.balanceOf(addr1Address)).to.equal(1);
+      expect(await upOnly.ownerOf(130)).to.equal(addr1Address);
     });
   });
 });

