@@ -9,6 +9,7 @@
   "author": "coding4kicks",
   "license": "MIT",
   "devDependencies": {
+    "@nomicfoundation/hardhat-ignition-ethers": "^0.15.8",
     "@nomicfoundation/hardhat-toolbox": "^4.0.0",
     "hardhat": "^2.22.15"
   },
