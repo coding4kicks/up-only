@@ -40,15 +40,20 @@ The `uponly.sol` contract overrides the OpenZeppelin ERC-721 contract's `transfe
 
 =============
 
-Current Goal: Review & Revive the Up Only Project
+Current Goal: Finish Up Only Project
 
 TODOs Today:
 
-- Finish Improvements / Features (add FTX code - protect from re-entrancy)
+- Finish Creating Metadata (collection)
+- Figure Out Deploy
+
+Today Details:
+
+- Update Script To Create Collection Metadata
+- Publish to IPFS
 
 TODOs Next:
 
-- Figure Out Deploy
-- Create Art (131)
+- Finish Deploy
 - Build Trading Site
-- Prod Deploy
+- Prod Deploy (collection, site)
