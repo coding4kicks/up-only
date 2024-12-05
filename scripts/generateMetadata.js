@@ -1,12 +1,49 @@
 const fs = require('fs');
 const path = require('path');
 
-const ExternalUrl = 'TBD';
+const ExternalUrl = 'https://todo';
+const BaseURI = 'ipfs://todo';
+const CollectionImage = 'ipfs://todo';
+const CollectionBanner = 'ipfs://todo';
 
 let idCounter = 0;
 
 function capitalizeFirstLetter(val) {
   return String(val).charAt(0).toUpperCase() + String(val).slice(1);
+}
+
+function createCollectionMetadata(outputDirectory) {
+  const collectionMetaData = {
+    name: 'Up Only Test Flight',
+    description: 'A collection of 131 experimental Up Only NFTs',
+    image: `${CollectionImage}/collection-image.gif`,
+    external_url: `${ExternalUrl}/collection`,
+    banner_image: `${CollectionBanner}/banner-image.png`,
+    traits: [
+      {
+        trait_type: 'Category',
+        values: [
+          'Art',
+          'Earth',
+          'Military',
+          'Physics',
+          'Space',
+          'Technology',
+          'Easter'
+        ]
+      }
+    ]
+  };
+
+  // Save metadata as JSON
+  const metadataFileName = `up-only.json`;
+  const metadataFilePath = path.join(outputDirectory, metadataFileName);
+  fs.writeFileSync(
+    metadataFilePath,
+    JSON.stringify(collectionMetaData, null, 2)
+  );
+
+  console.log(`Collection metadata created at ${metadataFilePath}`);
 }
 
 // Function to create NFT metadata
@@ -28,7 +65,7 @@ function createMetadataFile(imageFilePath, outputDirectory, baseUrl, category) {
     name: nftName,
     description: `Up Only ${nftName}`,
     image: `${baseUrl}/${path.basename(imageFilePath)}`,
-    external_url: `${ExternalUrl}/nft/${path.basename(imageFilePath)}`,
+    external_url: `${ExternalUrl}/nft/${secondaryPart}`,
     attributes: {
       trait_type: 'Category',
       value: capitalizeFirstLetter(category)
@@ -59,11 +96,13 @@ function resetMetadataDirectory(parentDirectory) {
   fs.mkdirSync(metadataDirectory);
   console.log(`Created new metadata directory at ${metadataDirectory}.`);
 
+  createCollectionMetadata(metadataDirectory);
+
   return metadataDirectory;
 }
 
 // Function to process all image files in a directory (recursively)
-function processImages(parentDirectory, baseUrl) {
+function processImages(parentDirectory) {
   const metadataDirectory = resetMetadataDirectory(parentDirectory);
   const assetsDirectory = path.join(parentDirectory, 'assets');
 
@@ -87,7 +126,7 @@ function processImages(parentDirectory, baseUrl) {
         createMetadataFile(
           filePath,
           metadataDirectory,
-          path.join(baseUrl, parentName),
+          path.join(BaseURI, parentName),
           parentName
         );
       }
@@ -99,27 +138,22 @@ function processImages(parentDirectory, baseUrl) {
 
 // Main function to run the script
 function main() {
-  console.log('FU');
   const args = process.argv.slice(2);
-  if (args.length < 2) {
-    console.error(
-      'Usage: node generateMetadata.js <parent_directory> <base_url>'
-    );
+  if (args.length < 1) {
+    console.error('Usage: node generateMetadata.js <parent_directory>');
     process.exit(1);
   }
 
   const parentDirectory = args[0];
-  const baseUrl = args[1];
 
   if (!fs.existsSync(parentDirectory)) {
     console.error(`Error: Directory "${parentDirectory}" does not exist.`);
     process.exit(1);
   }
 
-  console.log(
-    `Generating metadata for images in ${parentDirectory} with base URL ${baseUrl}...`
-  );
-  processImages(parentDirectory, baseUrl);
+  console.log(`Generating metadata for images in ${parentDirectory}...`);
+
+  processImages(parentDirectory);
   console.log('Metadata generation complete.');
 }
 
