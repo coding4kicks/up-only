@@ -2,11 +2,11 @@ import { loadFixture } from '@nomicfoundation/hardhat-toolbox/network-helpers';
 import { expect } from 'chai';
 import { ethers } from 'hardhat';
 
-const BASE_URI = 'IPFS:todo';
+const BASE_URI = 'ipfs://todo';
+const CONTRACT_URI = 'ipfs://todo';
 const BASE_EXTENSION = '.json';
 const COST = ethers.parseEther('0.1');
 const COST_TWO = ethers.parseEther('0.2');
-const COST_FOUR = ethers.parseEther('0.4');
 const COST_FIVE = ethers.parseEther('0.5');
 const COST_SIX = ethers.parseEther('0.6');
 const MAX_SUPPLY = 131;
@@ -42,6 +42,11 @@ describe('UpOnly', function () {
     it('Should set the correct base uri', async function () {
       const { upOnly } = await loadFixture(upOnlyFixture);
       expect(await upOnly.baseURI()).to.equal(BASE_URI);
+    });
+
+    it('Should set the correct contract uri', async function () {
+      const { upOnly } = await loadFixture(upOnlyFixture);
+      expect(await upOnly.baseURI()).to.equal(CONTRACT_URI);
     });
 
     it('Should set the correct base extension', async function () {

@@ -5,9 +5,16 @@ import "hardhat/console.sol";
 
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 
-contract UpOnly is ERC721 {
+interface IERC7572 {
+  function contractURI() external view returns (string memory);
 
-  string public baseURI = "IPFS:todo"; // TODO: Collection details
+  event ContractURIUpdated();
+}
+
+contract UpOnly is ERC721, IERC7572 {
+
+  string public baseURI = "ipfs://todo"; // TODO: Collection details
+  string public contractURI = "ipfs://todo";
   string public baseExtension = ".json";
   uint256 public cost = 0.1 ether;
   uint256 public supply = 0;
@@ -130,5 +137,6 @@ contract UpOnly is ERC721 {
 
     emit Payout(tokenId, offerer, owner, amount, fee);
   }
+
 }
 
