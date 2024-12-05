@@ -3,6 +3,8 @@ const path = require('path');
 
 const ExternalUrl = 'TBD';
 
+let idCounter = 0;
+
 function capitalizeFirstLetter(val) {
   return String(val).charAt(0).toUpperCase() + String(val).slice(1);
 }
@@ -10,6 +12,7 @@ function capitalizeFirstLetter(val) {
 // Function to create NFT metadata
 function createMetadataFile(imageFilePath, outputDirectory, baseUrl, category) {
   const fileName = path.basename(imageFilePath, path.extname(imageFilePath));
+  idCounter = category === 'easter' ? idCounter : idCounter + 1;
 
   // Split the file name into parts
   const [primaryPart, secondaryPart] = fileName
@@ -33,7 +36,7 @@ function createMetadataFile(imageFilePath, outputDirectory, baseUrl, category) {
   };
 
   // Save metadata as JSON
-  const metadataFileName = `${secondaryPart}.json`;
+  const metadataFileName = `${category === 'easter' ? 131 : idCounter}.json`;
   const metadataFilePath = path.join(outputDirectory, metadataFileName);
   fs.writeFileSync(metadataFilePath, JSON.stringify(metadata, null, 2));
 
