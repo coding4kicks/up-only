@@ -6,6 +6,8 @@ const BASE_URI = 'ipfs://todo';
 const CONTRACT_URI = 'ipfs://todo';
 const BASE_EXTENSION = '.json';
 const COST = ethers.parseEther('0.1');
+const COST_EASTER_EGG = ethers.parseEther('0.1051');
+const COST_EASTER_EGG_FAIL = ethers.parseEther('0.105');
 const COST_TWO = ethers.parseEther('0.2');
 const COST_FIVE = ethers.parseEther('0.5');
 const COST_SIX = ethers.parseEther('0.6');
@@ -800,7 +802,9 @@ describe('UpOnly', function () {
       const startBalanceAddr1 = await ethers.provider.getBalance(addr1Address);
       const startBalanceOwner = await ethers.provider.getBalance(ownerAddress);
 
-      await upOnly.connect(addr1)['offer(uint256)'](130, { value: COST_TWO });
+      await upOnly
+        .connect(addr1)
+        ['offer(uint256)'](130, { value: COST_EASTER_EGG });
       const offerBalanceAddr1 = await ethers.provider.getBalance(addr1Address);
       const offerBalanceOwner = await ethers.provider.getBalance(ownerAddress);
       expect(offerBalanceAddr1).to.be.lessThan(startBalanceAddr1);
@@ -808,6 +812,36 @@ describe('UpOnly', function () {
       expect(await upOnly.balanceOf(ownerAddress)).to.equal(0);
       expect(await upOnly.balanceOf(addr1Address)).to.equal(1);
       expect(await upOnly.ownerOf(130)).to.equal(addr1Address);
+    });
+
+    it('Should not allow transferFrom if easter egg offer is less then or equal to 5% greater than last transaction price', async function () {
+      const { upOnly, owner, addr1, addr2, addresses } = await loadFixture(
+        upOnlyFixture
+      );
+      const ownerAddress = await owner.getAddress();
+      const addr1Address = await addr1.getAddress();
+      expect(await upOnly.balanceOf(ownerAddress)).to.equal(0);
+
+      // Mint 130
+      for (let i = 0; i < 26; i++) {
+        await upOnly.connect(addresses[i]).mint(5, { value: COST_FIVE });
+      }
+
+      await upOnly.mint(1, { value: COST });
+      expect(await upOnly.balanceOf(ownerAddress)).to.equal(1);
+      expect(await upOnly.balanceOf(addr1Address)).to.equal(0);
+      expect(await upOnly.ownerOf(130)).to.equal(ownerAddress);
+      const startBalanceAddr1 = await ethers.provider.getBalance(addr1Address);
+      const startBalanceOwner = await ethers.provider.getBalance(ownerAddress);
+
+      await expect(
+        upOnly
+          .connect(addr1)
+          ['offer(uint256)'](130, { value: COST_EASTER_EGG_FAIL })
+      ).to.be.rejectedWith('TOO CHEAP');
+      expect(await upOnly.balanceOf(ownerAddress)).to.equal(1);
+      expect(await upOnly.balanceOf(addr1Address)).to.equal(0);
+      expect(await upOnly.ownerOf(130)).to.equal(ownerAddress);
     });
   });
 });

@@ -44,16 +44,15 @@ Current Goal: Finish Up Only Project
 
 TODOs Today:
 
-- Finish Creating Metadata (collection)
 - Figure Out Deploy
 
 Today Details:
 
-- Update Script To Create Collection Metadata
-- Publish to IPFS
+- Publish to IPFS - Pinata
+- Deploy to Test Net
 
 TODOs Next:
 
-- Finish Deploy
+- Finish Dev Deploy
 - Build Trading Site
-- Prod Deploy (collection, site)
+- Prod Deploy (deploy images, deploy trading site, get IPFS, get site URL, finalize and deploy metadata, deploy contracts, deploy site)

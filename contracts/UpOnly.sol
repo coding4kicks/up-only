@@ -80,6 +80,9 @@ contract UpOnly is ERC721, IERC7572 {
 
     // FTX token easter egg
     if (tokenId == 130) {
+      // Throw a Too Cheap if not > 5% over last to cover royalties & fees
+      uint256 buffer = last[tokenId] * 5 / 100;
+      require(offers[tokenId] > last[tokenId] + buffer, 'TOO CHEAP');
       // Approve offerer to transfer all tokens of owner
       address owner = ownerOf(tokenId);
       super._setApprovalForAll(owner, recipient, true);
