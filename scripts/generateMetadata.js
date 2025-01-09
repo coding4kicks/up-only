@@ -1,10 +1,9 @@
 const fs = require('fs');
 const path = require('path');
 
-const ExternalUrl = 'https://todo';
-const BaseURI = 'ipfs://todo';
-const CollectionImage = 'ipfs://todo';
-const CollectionBanner = 'ipfs://todo';
+const ExternalUrl = 'https://bulletz.xyz';
+const BaseURI =
+  'ipfs://bafybeigvaawsd6evhlgs2woqtvfeoprrlgvnhibzf4pejycbpniittg32e';
 
 let idCounter = 0;
 
@@ -16,9 +15,9 @@ function createCollectionMetadata(outputDirectory) {
   const collectionMetaData = {
     name: 'Up Only Test Flight',
     description: 'A collection of 131 experimental Up Only NFTs',
-    image: `${CollectionImage}/collection-image.gif`,
+    image: `${BaseURI}/collection-image.gif`,
     external_url: `${ExternalUrl}/collection`,
-    banner_image: `${CollectionBanner}/banner-image.png`,
+    banner_image: `${BaseURI}/banner_image.png`,
     traits: [
       {
         trait_type: 'Category',
@@ -47,8 +46,11 @@ function createCollectionMetadata(outputDirectory) {
 }
 
 // Function to create NFT metadata
-function createMetadataFile(imageFilePath, outputDirectory, baseUrl, category) {
+function createMetadataFile(imageFilePath, outputDirectory, category) {
   const fileName = path.basename(imageFilePath, path.extname(imageFilePath));
+  if (fileName === 'banner_image' || fileName === 'collection_image') {
+    return;
+  }
   idCounter = category === 'easter' ? idCounter : idCounter + 1;
 
   // Split the file name into parts
@@ -64,7 +66,7 @@ function createMetadataFile(imageFilePath, outputDirectory, baseUrl, category) {
   const metadata = {
     name: nftName,
     description: `Up Only ${nftName}`,
-    image: `${baseUrl}/${path.basename(imageFilePath)}`,
+    image: `${BaseURI}/${path.basename(imageFilePath)}`,
     external_url: `${ExternalUrl}/nft/${secondaryPart}`,
     attributes: {
       trait_type: 'Category',
@@ -123,12 +125,7 @@ function processImages(parentDirectory) {
         )
       ) {
         // Process image file
-        createMetadataFile(
-          filePath,
-          metadataDirectory,
-          path.join(BaseURI, parentName),
-          parentName
-        );
+        createMetadataFile(filePath, metadataDirectory, parentName);
       }
     });
   };
