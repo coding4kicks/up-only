@@ -846,4 +846,109 @@ describe('UpOnly', function () {
       expect(await upOnly.ownerOf(130)).to.equal(ownerAddress);
     });
   });
+
+  describe('Royalty Address Management', function () {
+    it('Should allow royalty address to update to new address', async function () {
+      const { upOnly, addr1 } = await loadFixture(upOnlyFixture);
+
+      // Create signer for current royalty address
+      const royaltySigner = await ethers.getImpersonatedSigner(ROYALTY_ADDRESS);
+
+      // Fund the royalty address with some ETH for gas
+      await addr1.sendTransaction({
+        to: ROYALTY_ADDRESS,
+        value: ethers.parseEther('1.0')
+      });
+
+      const newRoyaltyAddress = addr1.address;
+
+      // Check current royalty address
+      expect(await upOnly.royaltyAddress()).to.equal(ROYALTY_ADDRESS);
+
+      // Update royalty address
+      await expect(
+        upOnly.connect(royaltySigner).updateRoyaltyAddress(newRoyaltyAddress)
+      )
+        .to.emit(upOnly, 'RoyaltyAddressUpdated')
+        .withArgs(ROYALTY_ADDRESS, newRoyaltyAddress);
+
+      // Verify the update
+      expect(await upOnly.royaltyAddress()).to.equal(newRoyaltyAddress);
+    });
+
+    it('Should not allow non-royalty address to update', async function () {
+      const { upOnly, owner, addr1 } = await loadFixture(upOnlyFixture);
+
+      // Try to update from non-royalty address
+      await expect(
+        upOnly.connect(owner).updateRoyaltyAddress(addr1.address)
+      ).to.be.revertedWith('NOT AUTHORIZED');
+
+      // Verify royalty address hasn't changed
+      expect(await upOnly.royaltyAddress()).to.equal(ROYALTY_ADDRESS);
+    });
+
+    it('Should not allow update to zero address', async function () {
+      const { upOnly, addr1 } = await loadFixture(upOnlyFixture);
+
+      const royaltySigner = await ethers.getImpersonatedSigner(ROYALTY_ADDRESS);
+
+      // Fund the royalty address with some ETH for gas
+      await addr1.sendTransaction({
+        to: ROYALTY_ADDRESS,
+        value: ethers.parseEther('1.0')
+      });
+
+      // Try to update to zero address
+      await expect(
+        upOnly.connect(royaltySigner).updateRoyaltyAddress(ethers.ZeroAddress)
+      ).to.be.revertedWith('ZERO ADDRESS');
+
+      // Verify royalty address hasn't changed
+      expect(await upOnly.royaltyAddress()).to.equal(ROYALTY_ADDRESS);
+    });
+
+    it('Should not allow update to same address', async function () {
+      const { upOnly, addr1 } = await loadFixture(upOnlyFixture);
+
+      const royaltySigner = await ethers.getImpersonatedSigner(ROYALTY_ADDRESS);
+
+      // Fund the royalty address with some ETH for gas
+      await addr1.sendTransaction({
+        to: ROYALTY_ADDRESS,
+        value: ethers.parseEther('1.0')
+      });
+
+      // Try to update to current address
+      await expect(
+        upOnly.connect(royaltySigner).updateRoyaltyAddress(ROYALTY_ADDRESS)
+      ).to.be.revertedWith('SAME ADDRESS');
+
+      // Verify royalty address hasn't changed
+      expect(await upOnly.royaltyAddress()).to.equal(ROYALTY_ADDRESS);
+    });
+
+    it('Should allow new royalty address to receive payments', async function () {
+      const { upOnly, addr1, addr2 } = await loadFixture(upOnlyFixture);
+
+      // Setup royalty signer and update address
+      const royaltySigner = await ethers.getImpersonatedSigner(ROYALTY_ADDRESS);
+      await addr1.sendTransaction({
+        to: ROYALTY_ADDRESS,
+        value: ethers.parseEther('1.0')
+      });
+
+      const newRoyaltyAddress = addr2.address;
+      await upOnly
+        .connect(royaltySigner)
+        .updateRoyaltyAddress(newRoyaltyAddress);
+
+      // Check royalty payment goes to new address
+      const balanceBefore = await ethers.provider.getBalance(newRoyaltyAddress);
+      await upOnly.connect(addr1).mint(1, { value: COST });
+      const balanceAfter = await ethers.provider.getBalance(newRoyaltyAddress);
+
+      expect(balanceAfter).to.be.greaterThan(balanceBefore);
+    });
+  });
 });

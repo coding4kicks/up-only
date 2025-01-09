@@ -38,6 +38,9 @@ contract UpOnly is ERC721, IERC7572 {
   // Payout event documenting the tokenId, the offerer, the owner to be paid, the accepted offer amount, and royalty fee.
   event Payout(uint256 indexed token, address indexed offerer, address indexed payee, uint256 offer, uint256 fee);
 
+  // Add event for royalty address updates
+  event RoyaltyAddressUpdated(address indexed oldAddress, address indexed newAddress);
+
   constructor() ERC721("Test Flight", "UP") {
   }
 
@@ -139,6 +142,18 @@ contract UpOnly is ERC721, IERC7572 {
     require(success, "Failed to pay royalties");
 
     emit Payout(tokenId, offerer, owner, amount, fee);
+  }
+
+  // Add function to update royalty address
+  function updateRoyaltyAddress(address payable newRoyaltyAddress) external {
+    require(msg.sender == royaltyAddress, "NOT AUTHORIZED");
+    require(newRoyaltyAddress != address(0), "ZERO ADDRESS");
+    require(newRoyaltyAddress != royaltyAddress, "SAME ADDRESS");
+    
+    address oldAddress = royaltyAddress;
+    royaltyAddress = newRoyaltyAddress;
+    
+    emit RoyaltyAddressUpdated(oldAddress, newRoyaltyAddress);
   }
 
 }
