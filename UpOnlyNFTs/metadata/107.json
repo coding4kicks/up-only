@@ -1,0 +1,10 @@
+{
+  "name": "Space Station",
+  "description": "Up Only Space Station",
+  "image": "ipfs://bafybeigvaawsd6evhlgs2woqtvfeoprrlgvnhibzf4pejycbpniittg32e/UpJet-Space_Station.png",
+  "external_url": "https://bulletz.xyz/nft/Space_Station",
+  "attributes": {
+    "trait_type": "Category",
+    "value": "Space"
+  }
+}

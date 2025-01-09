@@ -1,0 +1,10 @@
+{
+  "name": "Bitcoin Network",
+  "description": "Up Only Bitcoin Network",
+  "image": "ipfs://bafybeigvaawsd6evhlgs2woqtvfeoprrlgvnhibzf4pejycbpniittg32e/UpJet-Bitcoin_Network.png",
+  "external_url": "https://bulletz.xyz/nft/Bitcoin_Network",
+  "attributes": {
+    "trait_type": "Category",
+    "value": "Technology"
+  }
+}

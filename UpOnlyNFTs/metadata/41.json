@@ -1,0 +1,10 @@
+{
+  "name": "Tidal Wave",
+  "description": "Up Only Tidal Wave",
+  "image": "ipfs://bafybeigvaawsd6evhlgs2woqtvfeoprrlgvnhibzf4pejycbpniittg32e/UpJet-Tidal_Wave.png",
+  "external_url": "https://bulletz.xyz/nft/Tidal_Wave",
+  "attributes": {
+    "trait_type": "Category",
+    "value": "Earth"
+  }
+}

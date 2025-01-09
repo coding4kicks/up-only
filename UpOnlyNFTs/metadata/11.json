@@ -1,0 +1,10 @@
+{
+  "name": "Starry Night",
+  "description": "Up Only Starry Night",
+  "image": "ipfs://bafybeigvaawsd6evhlgs2woqtvfeoprrlgvnhibzf4pejycbpniittg32e/UpJet-Starry_Night.png",
+  "external_url": "https://bulletz.xyz/nft/Starry_Night",
+  "attributes": {
+    "trait_type": "Category",
+    "value": "Art"
+  }
+}

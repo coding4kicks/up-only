@@ -1,0 +1,10 @@
+{
+  "name": "Waterloo Battle",
+  "description": "Up Only Waterloo Battle",
+  "image": "ipfs://bafybeigvaawsd6evhlgs2woqtvfeoprrlgvnhibzf4pejycbpniittg32e/UpJet-Waterloo_Battle.png",
+  "external_url": "https://bulletz.xyz/nft/Waterloo_Battle",
+  "attributes": {
+    "trait_type": "Category",
+    "value": "Military"
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "name": "Web Three",
+  "description": "Up Only Web Three",
+  "image": "ipfs://bafybeigvaawsd6evhlgs2woqtvfeoprrlgvnhibzf4pejycbpniittg32e/UpJet-Web_Three.png",
+  "external_url": "https://bulletz.xyz/nft/Web_Three",
+  "attributes": {
+    "trait_type": "Category",
+    "value": "Technology"
+  }
+}

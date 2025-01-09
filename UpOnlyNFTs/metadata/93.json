@@ -1,0 +1,10 @@
+{
+  "name": "Comet Tail",
+  "description": "Up Only Comet Tail",
+  "image": "ipfs://bafybeigvaawsd6evhlgs2woqtvfeoprrlgvnhibzf4pejycbpniittg32e/UpJet-Comet_Tail.png",
+  "external_url": "https://bulletz.xyz/nft/Comet_Tail",
+  "attributes": {
+    "trait_type": "Category",
+    "value": "Space"
+  }
+}

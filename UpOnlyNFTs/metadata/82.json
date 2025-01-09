@@ -1,0 +1,10 @@
+{
+  "name": "Shrodingers Cat",
+  "description": "Up Only Shrodingers Cat",
+  "image": "ipfs://bafybeigvaawsd6evhlgs2woqtvfeoprrlgvnhibzf4pejycbpniittg32e/UpJet-Shrodingers_Cat.png",
+  "external_url": "https://bulletz.xyz/nft/Shrodingers_Cat",
+  "attributes": {
+    "trait_type": "Category",
+    "value": "Physics"
+  }
+}

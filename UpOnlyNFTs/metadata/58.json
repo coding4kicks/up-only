@@ -1,0 +1,10 @@
+{
+  "name": "Roman Legion",
+  "description": "Up Only Roman Legion",
+  "image": "ipfs://bafybeigvaawsd6evhlgs2woqtvfeoprrlgvnhibzf4pejycbpniittg32e/UpJet-Roman_Legion.png",
+  "external_url": "https://bulletz.xyz/nft/Roman_Legion",
+  "attributes": {
+    "trait_type": "Category",
+    "value": "Military"
+  }
+}

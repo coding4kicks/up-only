@@ -1,0 +1,10 @@
+{
+  "name": "Toy Ships",
+  "description": "Up Only Toy Ships",
+  "image": "ipfs://bafybeigvaawsd6evhlgs2woqtvfeoprrlgvnhibzf4pejycbpniittg32e/UpJet-Toy_Ships.png",
+  "external_url": "https://bulletz.xyz/nft/Toy_Ships",
+  "attributes": {
+    "trait_type": "Category",
+    "value": "Military"
+  }
+}

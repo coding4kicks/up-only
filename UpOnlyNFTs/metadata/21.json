@@ -1,0 +1,10 @@
+{
+  "name": "Fire Ice",
+  "description": "Up Only Fire Ice",
+  "image": "ipfs://bafybeigvaawsd6evhlgs2woqtvfeoprrlgvnhibzf4pejycbpniittg32e/UpJet-Fire_Ice.png",
+  "external_url": "https://bulletz.xyz/nft/Fire_Ice",
+  "attributes": {
+    "trait_type": "Category",
+    "value": "Earth"
+  }
+}

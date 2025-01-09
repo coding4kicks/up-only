@@ -1,0 +1,10 @@
+{
+  "name": "Carrier Launch",
+  "description": "Up Only Carrier Launch",
+  "image": "ipfs://bafybeigvaawsd6evhlgs2woqtvfeoprrlgvnhibzf4pejycbpniittg32e/UpJet-Carrier_Launch.png",
+  "external_url": "https://bulletz.xyz/nft/Carrier_Launch",
+  "attributes": {
+    "trait_type": "Category",
+    "value": "Military"
+  }
+}

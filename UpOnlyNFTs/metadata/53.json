@@ -1,0 +1,10 @@
+{
+  "name": "Leaf Camo",
+  "description": "Up Only Leaf Camo",
+  "image": "ipfs://bafybeigvaawsd6evhlgs2woqtvfeoprrlgvnhibzf4pejycbpniittg32e/UpJet-Leaf_Camo.png",
+  "external_url": "https://bulletz.xyz/nft/Leaf_Camo",
+  "attributes": {
+    "trait_type": "Category",
+    "value": "Military"
+  }
+}

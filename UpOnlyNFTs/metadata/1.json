@@ -1,0 +1,10 @@
+{
+  "name": "Comic Boom",
+  "description": "Up Only Comic Boom",
+  "image": "ipfs://bafybeigvaawsd6evhlgs2woqtvfeoprrlgvnhibzf4pejycbpniittg32e/UpJet-Comic_Boom.png",
+  "external_url": "https://bulletz.xyz/nft/Comic_Boom",
+  "attributes": {
+    "trait_type": "Category",
+    "value": "Art"
+  }
+}

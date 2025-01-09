@@ -1,0 +1,10 @@
+{
+  "name": "Star Cluster",
+  "description": "Up Only Star Cluster",
+  "image": "ipfs://bafybeigvaawsd6evhlgs2woqtvfeoprrlgvnhibzf4pejycbpniittg32e/UpJet-Star_Cluster.png",
+  "external_url": "https://bulletz.xyz/nft/Star_Cluster",
+  "attributes": {
+    "trait_type": "Category",
+    "value": "Space"
+  }
+}

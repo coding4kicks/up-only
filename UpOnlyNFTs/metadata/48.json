@@ -1,0 +1,10 @@
+{
+  "name": "Control Room",
+  "description": "Up Only Control Room",
+  "image": "ipfs://bafybeigvaawsd6evhlgs2woqtvfeoprrlgvnhibzf4pejycbpniittg32e/UpJet-Control_Room.png",
+  "external_url": "https://bulletz.xyz/nft/Control_Room",
+  "attributes": {
+    "trait_type": "Category",
+    "value": "Military"
+  }
+}

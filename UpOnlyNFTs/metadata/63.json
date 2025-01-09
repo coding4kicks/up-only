@@ -1,0 +1,10 @@
+{
+  "name": "Toy Soldiers",
+  "description": "Up Only Toy Soldiers",
+  "image": "ipfs://bafybeigvaawsd6evhlgs2woqtvfeoprrlgvnhibzf4pejycbpniittg32e/UpJet-Toy_Soldiers.png",
+  "external_url": "https://bulletz.xyz/nft/Toy_Soldiers",
+  "attributes": {
+    "trait_type": "Category",
+    "value": "Military"
+  }
+}

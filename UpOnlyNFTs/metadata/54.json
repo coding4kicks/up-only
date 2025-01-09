@@ -1,0 +1,10 @@
+{
+  "name": "Midway Battle",
+  "description": "Up Only Midway Battle",
+  "image": "ipfs://bafybeigvaawsd6evhlgs2woqtvfeoprrlgvnhibzf4pejycbpniittg32e/UpJet-Midway_Battle.png",
+  "external_url": "https://bulletz.xyz/nft/Midway_Battle",
+  "attributes": {
+    "trait_type": "Category",
+    "value": "Military"
+  }
+}

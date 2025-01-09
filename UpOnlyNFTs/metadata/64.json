@@ -1,0 +1,10 @@
+{
+  "name": "Toy Tanks",
+  "description": "Up Only Toy Tanks",
+  "image": "ipfs://bafybeigvaawsd6evhlgs2woqtvfeoprrlgvnhibzf4pejycbpniittg32e/UpJet-Toy_Tanks.png",
+  "external_url": "https://bulletz.xyz/nft/Toy_Tanks",
+  "attributes": {
+    "trait_type": "Category",
+    "value": "Military"
+  }
+}

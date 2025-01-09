@@ -1,0 +1,10 @@
+{
+  "name": "Japanese Garden",
+  "description": "Up Only Japanese Garden",
+  "image": "ipfs://bafybeigvaawsd6evhlgs2woqtvfeoprrlgvnhibzf4pejycbpniittg32e/UpJet-Japanese_Garden.png",
+  "external_url": "https://bulletz.xyz/nft/Japanese_Garden",
+  "attributes": {
+    "trait_type": "Category",
+    "value": "Earth"
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "name": "Double Helix",
+  "description": "Up Only Double Helix",
+  "image": "ipfs://bafybeigvaawsd6evhlgs2woqtvfeoprrlgvnhibzf4pejycbpniittg32e/UpJet-Double_Helix.png",
+  "external_url": "https://bulletz.xyz/nft/Double_Helix",
+  "attributes": {
+    "trait_type": "Category",
+    "value": "Physics"
+  }
+}

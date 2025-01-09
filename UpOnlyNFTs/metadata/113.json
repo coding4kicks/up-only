@@ -1,0 +1,10 @@
+{
+  "name": "Bletchley Park",
+  "description": "Up Only Bletchley Park",
+  "image": "ipfs://bafybeigvaawsd6evhlgs2woqtvfeoprrlgvnhibzf4pejycbpniittg32e/UpJet-Bletchley_Park.png",
+  "external_url": "https://bulletz.xyz/nft/Bletchley_Park",
+  "attributes": {
+    "trait_type": "Category",
+    "value": "Technology"
+  }
+}

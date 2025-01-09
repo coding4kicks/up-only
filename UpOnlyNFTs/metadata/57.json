@@ -1,0 +1,10 @@
+{
+  "name": "Ocean Camo",
+  "description": "Up Only Ocean Camo",
+  "image": "ipfs://bafybeigvaawsd6evhlgs2woqtvfeoprrlgvnhibzf4pejycbpniittg32e/UpJet-Ocean_Camo.png",
+  "external_url": "https://bulletz.xyz/nft/Ocean_Camo",
+  "attributes": {
+    "trait_type": "Category",
+    "value": "Military"
+  }
+}

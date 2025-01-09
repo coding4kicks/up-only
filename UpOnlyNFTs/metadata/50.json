@@ -1,0 +1,10 @@
+{
+  "name": "Drone Swarm",
+  "description": "Up Only Drone Swarm",
+  "image": "ipfs://bafybeigvaawsd6evhlgs2woqtvfeoprrlgvnhibzf4pejycbpniittg32e/UpJet-Drone_Swarm.png",
+  "external_url": "https://bulletz.xyz/nft/Drone_Swarm",
+  "attributes": {
+    "trait_type": "Category",
+    "value": "Military"
+  }
+}

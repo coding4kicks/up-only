@@ -1,0 +1,10 @@
+{
+  "name": "Aurora Borealis",
+  "description": "Up Only Aurora Borealis",
+  "image": "ipfs://bafybeigvaawsd6evhlgs2woqtvfeoprrlgvnhibzf4pejycbpniittg32e/UpJet-Aurora_Borealis.png",
+  "external_url": "https://bulletz.xyz/nft/Aurora_Borealis",
+  "attributes": {
+    "trait_type": "Category",
+    "value": "Earth"
+  }
+}

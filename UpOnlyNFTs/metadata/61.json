@@ -1,0 +1,10 @@
+{
+  "name": "Toy Planes",
+  "description": "Up Only Toy Planes",
+  "image": "ipfs://bafybeigvaawsd6evhlgs2woqtvfeoprrlgvnhibzf4pejycbpniittg32e/UpJet-Toy_Planes.png",
+  "external_url": "https://bulletz.xyz/nft/Toy_Planes",
+  "attributes": {
+    "trait_type": "Category",
+    "value": "Military"
+  }
+}

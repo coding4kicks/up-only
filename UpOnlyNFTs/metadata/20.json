@@ -1,0 +1,10 @@
+{
+  "name": "English Garden",
+  "description": "Up Only English Garden",
+  "image": "ipfs://bafybeigvaawsd6evhlgs2woqtvfeoprrlgvnhibzf4pejycbpniittg32e/UpJet-English_Garden.png",
+  "external_url": "https://bulletz.xyz/nft/English_Garden",
+  "attributes": {
+    "trait_type": "Category",
+    "value": "Earth"
+  }
+}

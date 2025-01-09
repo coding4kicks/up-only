@@ -1,0 +1,10 @@
+{
+  "name": "Arpanet Wan",
+  "description": "Up Only Arpanet Wan",
+  "image": "ipfs://bafybeigvaawsd6evhlgs2woqtvfeoprrlgvnhibzf4pejycbpniittg32e/UpJet-Arpanet_Wan.png",
+  "external_url": "https://bulletz.xyz/nft/Arpanet_Wan",
+  "attributes": {
+    "trait_type": "Category",
+    "value": "Technology"
+  }
+}

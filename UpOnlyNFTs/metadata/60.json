@@ -1,0 +1,10 @@
+{
+  "name": "Squadron Patches",
+  "description": "Up Only Squadron Patches",
+  "image": "ipfs://bafybeigvaawsd6evhlgs2woqtvfeoprrlgvnhibzf4pejycbpniittg32e/UpJet-Squadron_Patches.png",
+  "external_url": "https://bulletz.xyz/nft/Squadron_Patches",
+  "attributes": {
+    "trait_type": "Category",
+    "value": "Military"
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "name": "Kelp Forest",
+  "description": "Up Only Kelp Forest",
+  "image": "ipfs://bafybeigvaawsd6evhlgs2woqtvfeoprrlgvnhibzf4pejycbpniittg32e/UpJet-Kelp_Forest.png",
+  "external_url": "https://bulletz.xyz/nft/Kelp_Forest",
+  "attributes": {
+    "trait_type": "Category",
+    "value": "Earth"
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "name": "Apollo Launch",
+  "description": "Up Only Apollo Launch",
+  "image": "ipfs://bafybeigvaawsd6evhlgs2woqtvfeoprrlgvnhibzf4pejycbpniittg32e/UpJet-Apollo_Launch.png",
+  "external_url": "https://bulletz.xyz/nft/Apollo_Launch",
+  "attributes": {
+    "trait_type": "Category",
+    "value": "Space"
+  }
+}

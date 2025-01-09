@@ -1,0 +1,10 @@
+{
+  "name": "Stained Glass",
+  "description": "Up Only Stained Glass",
+  "image": "ipfs://bafybeigvaawsd6evhlgs2woqtvfeoprrlgvnhibzf4pejycbpniittg32e/UpJet-Stained_Glass.png",
+  "external_url": "https://bulletz.xyz/nft/Stained_Glass",
+  "attributes": {
+    "trait_type": "Category",
+    "value": "Art"
+  }
+}

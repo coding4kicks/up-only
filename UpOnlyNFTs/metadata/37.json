@@ -1,0 +1,10 @@
+{
+  "name": "Redwood Forest",
+  "description": "Up Only Redwood Forest",
+  "image": "ipfs://bafybeigvaawsd6evhlgs2woqtvfeoprrlgvnhibzf4pejycbpniittg32e/UpJet-Redwood_Forest.png",
+  "external_url": "https://bulletz.xyz/nft/Redwood_Forest",
+  "attributes": {
+    "trait_type": "Category",
+    "value": "Earth"
+  }
+}

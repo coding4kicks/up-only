@@ -1,0 +1,10 @@
+{
+  "name": "Asteroid Belt",
+  "description": "Up Only Asteroid Belt",
+  "image": "ipfs://bafybeigvaawsd6evhlgs2woqtvfeoprrlgvnhibzf4pejycbpniittg32e/UpJet-Asteroid_Belt.png",
+  "external_url": "https://bulletz.xyz/nft/Asteroid_Belt",
+  "attributes": {
+    "trait_type": "Category",
+    "value": "Space"
+  }
+}

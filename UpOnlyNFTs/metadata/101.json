@@ -1,0 +1,10 @@
+{
+  "name": "Meteor Shower",
+  "description": "Up Only Meteor Shower",
+  "image": "ipfs://bafybeigvaawsd6evhlgs2woqtvfeoprrlgvnhibzf4pejycbpniittg32e/UpJet-Meteor_Shower.png",
+  "external_url": "https://bulletz.xyz/nft/Meteor_Shower",
+  "attributes": {
+    "trait_type": "Category",
+    "value": "Space"
+  }
+}

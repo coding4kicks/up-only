@@ -1,0 +1,10 @@
+{
+  "name": "Hypersonic Missile",
+  "description": "Up Only Hypersonic Missile",
+  "image": "ipfs://bafybeigvaawsd6evhlgs2woqtvfeoprrlgvnhibzf4pejycbpniittg32e/UpJet-Hypersonic_Missile.png",
+  "external_url": "https://bulletz.xyz/nft/Hypersonic_Missile",
+  "attributes": {
+    "trait_type": "Category",
+    "value": "Military"
+  }
+}

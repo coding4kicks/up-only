@@ -1,0 +1,10 @@
+{
+  "name": "Graffiti Wall",
+  "description": "Up Only Graffiti Wall",
+  "image": "ipfs://bafybeigvaawsd6evhlgs2woqtvfeoprrlgvnhibzf4pejycbpniittg32e/UpJet-Graffiti_Wall.png",
+  "external_url": "https://bulletz.xyz/nft/Graffiti_Wall",
+  "attributes": {
+    "trait_type": "Category",
+    "value": "Art"
+  }
+}

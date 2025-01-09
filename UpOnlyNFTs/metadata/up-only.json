@@ -1,0 +1,21 @@
+{
+  "name": "Up Only Test Flight",
+  "description": "A collection of 131 experimental Up Only NFTs",
+  "image": "ipfs://bafybeigvaawsd6evhlgs2woqtvfeoprrlgvnhibzf4pejycbpniittg32e/collection-image.gif",
+  "external_url": "https://bulletz.xyz/collection",
+  "banner_image": "ipfs://bafybeigvaawsd6evhlgs2woqtvfeoprrlgvnhibzf4pejycbpniittg32e/banner_image.png",
+  "traits": [
+    {
+      "trait_type": "Category",
+      "values": [
+        "Art",
+        "Earth",
+        "Military",
+        "Physics",
+        "Space",
+        "Technology",
+        "Easter"
+      ]
+    }
+  ]
+}

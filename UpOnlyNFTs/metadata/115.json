@@ -1,0 +1,10 @@
+{
+  "name": "Circuit Board",
+  "description": "Up Only Circuit Board",
+  "image": "ipfs://bafybeigvaawsd6evhlgs2woqtvfeoprrlgvnhibzf4pejycbpniittg32e/UpJet-Circuit_Board.png",
+  "external_url": "https://bulletz.xyz/nft/Circuit_Board",
+  "attributes": {
+    "trait_type": "Category",
+    "value": "Technology"
+  }
+}
