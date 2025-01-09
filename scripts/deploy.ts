@@ -1,16 +1,34 @@
-import { ethers } from 'hardhat';
+import { ethers, network } from 'hardhat';
+import { verify } from './verify';
 
 async function main() {
-  const upOnly = await ethers.deployContract('UpOnly');
+  // Log deployment info
+  console.log('Deploying to network:', network.name);
 
+  // Get deployer account
+  const [deployer] = await ethers.getSigners();
+  console.log('Deploying with account:', deployer.address);
+
+  // Deploy contract
+  const UpOnly = await ethers.getContractFactory('UpOnly');
+  const upOnly = await UpOnly.deploy();
   await upOnly.waitForDeployment();
 
-  console.log(`UpOnly with deployed to ${upOnly.target}`);
+  const address = await upOnly.getAddress();
+  console.log('UpOnly deployed to:', address);
+
+  // Verify on Etherscan if not on localhost
+  if (network.name !== 'hardhat' && network.name !== 'localhost') {
+    console.log('Waiting for block confirmations...');
+    await upOnly.deploymentTransaction()?.wait(6);
+
+    await verify(address, []);
+  }
 }
 
-// We recommend this pattern to be able to use async/await everywhere
-// and properly handle errors.
-main().catch(error => {
-  console.error(error);
-  process.exitCode = 1;
-});
+main()
+  .then(() => process.exit(0))
+  .catch(error => {
+    console.error(error);
+    process.exit(1);
+  });
