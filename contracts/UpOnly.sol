@@ -13,15 +13,15 @@ interface IERC7572 {
 
 contract UpOnly is ERC721, IERC7572 {
 
-  string public baseURI = "ipfs://todo"; // TODO: Collection details
-  string public contractURI = "ipfs://todo";
+  string public baseURI = "ipfs://bafybeifbye646qce3nr4p4gd3qpgrmyfxypaznmjcnvnvwdcdkpjularmu";
+  string public contractURI = "ipfs://bafybeifbye646qce3nr4p4gd3qpgrmyfxypaznmjcnvnvwdcdkpjularmu/up-only.json";
   string public baseExtension = ".json";
   uint256 public cost = 0.1 ether;
   uint256 public supply = 0;
   uint256 public maxSupply = 131;
   uint256 public maxMintAmount = 5;
   uint256 public royalty = 3; // percent
-  address payable public royaltyAddress = payable(0xCdB0Ba3bEE883C1E56b115b39bb0f2315Ce20C16); // VetDAO - TODO: multisig, allow update later
+  address payable public royaltyAddress = payable(0xCdB0Ba3bEE883C1E56b115b39bb0f2315Ce20C16);
   mapping(uint256 => uint256) public last;
   mapping(uint256 => uint256) public offers;
   mapping(uint256 => address payable) public offerers;
