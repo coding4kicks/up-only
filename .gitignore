@@ -5,3 +5,6 @@
 /artifacts
 /typechain-types
 /cache
+
+# env
+.env
