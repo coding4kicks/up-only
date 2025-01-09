@@ -6,13 +6,18 @@ const config: HardhatUserConfig = {
   solidity: {
     version: '0.8.20',
     settings: {
-      // Configure output selection to reduce warnings
-      outputSelection: {
-        '*': {
-          '*': ['abi', 'evm.bytecode'] // Select only essential outputs
-        }
+      optimizer: {
+        enabled: true,
+        runs: 200
       }
     }
+  },
+  paths: {
+    sources: './contracts',
+    tests: './test',
+    cache: './cache',
+    artifacts: './artifacts',
+    node_modules: './node_modules'
   },
   networks: {
     hardhat: {

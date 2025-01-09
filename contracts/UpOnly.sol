@@ -1,9 +1,10 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.9;
+pragma solidity ^0.8.20;
 
 import "hardhat/console.sol";
 
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
 interface IERC7572 {
   function contractURI() external view returns (string memory);
@@ -11,7 +12,7 @@ interface IERC7572 {
   event ContractURIUpdated();
 }
 
-contract UpOnly is ERC721, IERC7572 {
+contract UpOnly is ERC721, IERC7572, ReentrancyGuard {
 
   string public baseURI = "ipfs://bafybeifbye646qce3nr4p4gd3qpgrmyfxypaznmjcnvnvwdcdkpjularmu";
   string public contractURI = "ipfs://bafybeifbye646qce3nr4p4gd3qpgrmyfxypaznmjcnvnvwdcdkpjularmu/up-only.json";
@@ -45,7 +46,7 @@ contract UpOnly is ERC721, IERC7572 {
   }
 
   // Mint `mintAmount` to `mgs.sender` at `cost` per token up to `maxMintAmount` and `maxSupply`
-  function mint(uint256 mintAmount) public payable {
+  function mint(uint256 mintAmount) public payable nonReentrant {
     require(mintAmount > 0, "WHY ZERO");
     require(mintAmount + balanceOf(msg.sender) <= maxMintAmount, "TOO GREEDY");
     require(supply + mintAmount <= maxSupply, "ALL GONE");
@@ -58,11 +59,11 @@ contract UpOnly is ERC721, IERC7572 {
     }
     supply = supply + mintAmount;
 
-    // send royalties - whitelist address or add re-entrency protection
+    emit Mint(tokenId, msg.sender, mintAmount, msg.value, supply);
+
+    // External call after state changes
     (bool success, ) = royaltyAddress.call{value: msg.value}("");
     require(success, "Failed to pay mint");
-
-    emit Mint(tokenId, msg.sender, mintAmount, msg.value, supply);
   }
 
   // Override transferFrom of OZ ERC-721. 
@@ -103,45 +104,49 @@ contract UpOnly is ERC721, IERC7572 {
   }
 
   // Revoke an offer and get a refund minus a fee
-  function revoke(uint256 tokenId) public payable {
+  function revoke(uint256 tokenId) public payable nonReentrant {
     require(msg.sender == offerers[tokenId], "NOT YOU");
 
-    // capture values and reset
+    // Capture values and update state first
     address payable offerer = offerers[tokenId];
     uint256 amount = offers[tokenId];
-    uint256 fee = amount / 100; // 1% royalty on revoke
+    uint256 fee = amount / 100;
+    
+    // Update state
     offerers[tokenId] = payable(address(0));
     offers[tokenId] = last[tokenId];
+    
+    emit Revoke(tokenId, offerer, ownerOf(tokenId), amount, fee);
 
+    // External calls after state changes
     (bool success, ) = offerer.call{value: amount - fee}("");
     require(success, "Failed to return offer");
 
-    // send royalties
     (success, ) = royaltyAddress.call{value: fee}("");
     require(success, "Failed to pay royalties");
-
-    emit Revoke(tokenId, offerer, ownerOf(tokenId), amount, fee);
   }
 
-  function _payout(uint256 tokenId) private {
+  function _payout(uint256 tokenId) private nonReentrant {
     require(offers[tokenId] > last[tokenId], 'NOT POSSIBLE');
-    last[tokenId] = offers[tokenId];
-
-    // capture values and reset
+    
+    // Capture and update state first
     uint256 amount = offers[tokenId];
-    uint256 fee = amount * royalty / 100; // 3% royalty on transfer
+    uint256 fee = amount * royalty / 100;
     address offerer = offerers[tokenId];
     address owner = ownerOf(tokenId);
+    
+    // Update state
+    last[tokenId] = offers[tokenId];
     offerers[tokenId] = payable(address(0));
     
+    emit Payout(tokenId, offerer, owner, amount, fee);
+
+    // External calls after state changes
     (bool success, ) = owner.call{value: amount - fee}("");
     require(success, "Failed to send payment");
-
-    // send royalties
+    
     (success, ) = royaltyAddress.call{value: fee}("");
     require(success, "Failed to pay royalties");
-
-    emit Payout(tokenId, offerer, owner, amount, fee);
   }
 
   // Add function to update royalty address
