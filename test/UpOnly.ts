@@ -13,12 +13,12 @@ const METADATA = {
 };
 
 const COSTS = {
-  MINT: ethers.parseEther('0.1'),
-  EASTER_EGG: ethers.parseEther('0.1051'),
-  EASTER_EGG_FAIL: ethers.parseEther('0.105'),
-  TWO: ethers.parseEther('0.2'),
-  FIVE: ethers.parseEther('0.5'),
-  SIX: ethers.parseEther('0.6')
+  MINT: ethers.parseEther('0.01'),
+  EASTER_EGG: ethers.parseEther('0.01051'),
+  EASTER_EGG_FAIL: ethers.parseEther('0.0105'),
+  TWO: ethers.parseEther('0.02'),
+  FIVE: ethers.parseEther('0.05'),
+  SIX: ethers.parseEther('0.06')
 };
 
 const LIMITS = {

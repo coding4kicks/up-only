@@ -23,7 +23,7 @@ contract UpOnly is ERC721, IERC7572, ReentrancyGuard {
     mapping(uint256 => TokenData) public tokenData;
     
     // Pack smaller uint variables together in a single slot
-    uint96 public cost = 0.1 ether;
+    uint96 public cost = 0.01 ether;
     uint96 public maxSupply = 131;
     uint32 public supply = 0;
     uint16 public maxMintAmount = 5;
