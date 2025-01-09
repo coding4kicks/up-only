@@ -1,3 +1,5 @@
+![Up Only NFTs Banner](./UpOnlyNFTs/assets/banner_image.png)
+
 # UP ONLY NFTs
 
 Up Only NFTs are a unique collection of experimental NFTs with an innovative price mechanism that ensures tokens can only increase in value. This project implements a novel approach to NFT trading where each transfer must be at a higher price than the previous one.

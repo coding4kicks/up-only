@@ -8,3 +8,10 @@
 
 # env
 .env
+.env.*
+*.env
+
+# Private keys and secrets
+*private*
+*secret*
+*key*
