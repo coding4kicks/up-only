@@ -90,9 +90,9 @@ describe('UpOnly', function () {
       const { upOnly } = await loadFixture(deployFixture);
       const belowCost = COSTS.MINT - BigInt(1);
 
-      await expect(upOnly.mint(1, { value: belowCost })).to.be.revertedWith(
-        'TOO CHEAP'
-      );
+      await expect(
+        upOnly.mint(1, { value: belowCost })
+      ).to.be.revertedWithCustomError(upOnly, 'InsufficientPayment');
     });
 
     it('Should mint tokens to multiple addresses', async function () {
@@ -122,9 +122,9 @@ describe('UpOnly', function () {
         LIMITS.MAX_MINT_AMOUNT
       );
 
-      await expect(upOnly.mint(1, { value: COSTS.MINT })).to.be.revertedWith(
-        'TOO GREEDY'
-      );
+      await expect(
+        upOnly.mint(1, { value: COSTS.MINT })
+      ).to.be.revertedWithCustomError(upOnly, 'ExceedsMaxMintAmount');
     });
 
     it('Should enforce max supply limit', async function () {
@@ -139,9 +139,9 @@ describe('UpOnly', function () {
       await mintTokens(upOnly, 1, addresses[26]);
 
       // Try to mint one more
-      await expect(mintTokens(upOnly, 1, addresses[27])).to.be.revertedWith(
-        'ALL GONE'
-      );
+      await expect(
+        mintTokens(upOnly, 1, addresses[27])
+      ).to.be.revertedWithCustomError(upOnly, 'ExceedsMaxSupply');
     });
 
     it('Should transfer mint value to royalty wallet', async function () {
@@ -203,7 +203,7 @@ describe('UpOnly', function () {
       await mintTokens(upOnly, 1, owner);
       await expect(
         upOnly.connect(addr1)['offer(uint256)'](0, { value: COSTS.MINT })
-      ).to.be.revertedWith('TOO CHEAP');
+      ).to.be.revertedWithCustomError(upOnly, 'OfferTooLow');
     });
 
     it('Should allow offer revocation', async function () {
@@ -226,9 +226,9 @@ describe('UpOnly', function () {
       await mintTokens(upOnly, 1, owner);
       await upOnly.connect(addr1)['offer(uint256)'](0, { value: COSTS.TWO });
 
-      await expect(upOnly.connect(addr2).revoke(0)).to.be.revertedWith(
-        'NOT YOU'
-      );
+      await expect(
+        upOnly.connect(addr2).revoke(0)
+      ).to.be.revertedWithCustomError(upOnly, 'Unauthorized');
     });
   });
 
@@ -297,7 +297,7 @@ describe('UpOnly', function () {
         upOnly
           .connect(addr1)
           ['offer(uint256)'](130, { value: COSTS.EASTER_EGG_FAIL })
-      ).to.be.revertedWith('TOO CHEAP');
+      ).to.be.revertedWithCustomError(upOnly, 'OfferTooLow');
     });
   });
 
@@ -320,7 +320,7 @@ describe('UpOnly', function () {
 
       await expect(
         upOnly.connect(owner).updateRoyaltyAddress(addr1.address)
-      ).to.be.revertedWith('NOT AUTHORIZED');
+      ).to.be.revertedWithCustomError(upOnly, 'Unauthorized');
     });
 
     it('Should reject invalid royalty address updates', async function () {
@@ -329,11 +329,11 @@ describe('UpOnly', function () {
 
       await expect(
         upOnly.connect(royaltySigner).updateRoyaltyAddress(ethers.ZeroAddress)
-      ).to.be.revertedWith('ZERO ADDRESS');
+      ).to.be.revertedWithCustomError(upOnly, 'ZeroAddress');
 
       await expect(
         upOnly.connect(royaltySigner).updateRoyaltyAddress(ROYALTY.ADDRESS)
-      ).to.be.revertedWith('SAME ADDRESS');
+      ).to.be.revertedWithCustomError(upOnly, 'SameAddress');
     });
 
     it('Should direct royalties to new address after update', async function () {
