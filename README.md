@@ -87,6 +87,12 @@ npx hardhat run scripts/deploy.ts
 npx hardhat run scripts/deploy.ts --network sepolia
 ```
 
+### Testnet (Holesky)
+
+```bash
+npx hardhat run scripts/deploy.ts --network holesky
+```
+
 ### Mainnet
 
 ```bash

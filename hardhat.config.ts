@@ -7,7 +7,7 @@ dotenv.config();
 // Ensure these environment variables are set
 const PRIVATE_KEY = process.env.PRIVATE_KEY || '';
 const ETHERSCAN_API_KEY = process.env.ETHERSCAN_API_KEY || '';
-const INFURA_API_KEY = process.env.INFURA_API_KEY || '';
+const ALCHEMY_API_KEY = process.env.ALCHEMY_API_KEY || '';
 
 const config: HardhatUserConfig = {
   solidity: '0.8.20',
@@ -20,17 +20,17 @@ const config: HardhatUserConfig = {
     },
     // Ethereum Mainnet
     mainnet: {
-      url: `https://mainnet.infura.io/v3/${INFURA_API_KEY}`,
+      url: `https://eth-mainnet.g.alchemy.com/v2/${ALCHEMY_API_KEY}`,
       accounts: PRIVATE_KEY ? [PRIVATE_KEY] : []
     },
     // Goerli Testnet
-    goerli: {
-      url: `https://goerli.infura.io/v3/${INFURA_API_KEY}`,
+    holesky: {
+      url: `https://eth-holesky.g.alchemy.com/v2/${ALCHEMY_API_KEY}`,
       accounts: PRIVATE_KEY ? [PRIVATE_KEY] : []
     },
     // Sepolia Testnet
     sepolia: {
-      url: `https://sepolia.infura.io/v3/${INFURA_API_KEY}`,
+      url: `https://eth-sepolia.g.alchemy.com/v2/${ALCHEMY_API_KEY}`,
       accounts: PRIVATE_KEY ? [PRIVATE_KEY] : []
     }
   },
