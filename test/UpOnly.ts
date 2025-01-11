@@ -1,7 +1,8 @@
 import { loadFixture } from '@nomicfoundation/hardhat-toolbox/network-helpers';
 import { expect } from 'chai';
 import { ethers } from 'hardhat';
-import { Contract } from 'ethers';
+import { Contract, ContractTransactionResponse } from 'ethers';
+import { UpOnly } from '../typechain-types';
 
 // Constants
 const METADATA = {
@@ -41,7 +42,11 @@ describe('UpOnly', function () {
   }
 
   // Helper function to mint tokens for testing
-  async function mintTokens(contract: Contract, amount: number, signer: any) {
+  async function mintTokens(
+    contract: UpOnly & { deploymentTransaction(): ContractTransactionResponse },
+    amount: number,
+    signer: any
+  ) {
     await contract
       .connect(signer)
       .mint(amount, { value: COSTS.MINT * BigInt(amount) });
