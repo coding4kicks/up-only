@@ -2,12 +2,17 @@ import Image from 'next/image';
 import NFTCard from '@/components/nft-card';
 import { Button } from '@/components/ui/button';
 
+const IPFS_GATEWAY = 'https://gateway.pinata.cloud/ipfs';
+const COLLECTION_IPFS_HASH =
+  'bafybeigvaawsd6evhlgs2woqtvfeoprrlgvnhibzf4pejycbpniittg32e';
+const BANNER_IPFS_HASH = 'YOUR_BANNER_HASH';
+const LOGO_IPFS_HASH = 'YOUR_LOGO_HASH';
+
 export default function Home() {
   // Generate array of 131 NFTs
   const nfts = Array.from({ length: 131 }, (_, i) => ({
     id: i + 1,
-    // Replace with actual NFT images
-    imageUrl: `/nfts/${i + 1}.png`
+    imageUrl: `${IPFS_GATEWAY}/${COLLECTION_IPFS_HASH}/${i + 1}.png`
   }));
 
   return (
@@ -15,7 +20,7 @@ export default function Home() {
       {/* Hero Banner */}
       <div className="relative h-[50vh] w-full">
         <Image
-          src="/banner.jpg" // Add your banner image
+          src={`${IPFS_GATEWAY}/${BANNER_IPFS_HASH}`}
           alt="UpOnly Collection Banner"
           fill
           className="object-cover"
@@ -28,7 +33,7 @@ export default function Home() {
         <div className="mb-12 flex flex-col items-center text-center">
           <div className="relative h-32 w-32 rounded-full overflow-hidden mb-6">
             <Image
-              src="/collection-logo.png" // Add your collection logo
+              src={`${IPFS_GATEWAY}/${LOGO_IPFS_HASH}`}
               alt="UpOnly Collection"
               fill
               className="object-cover"
