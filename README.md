@@ -1,5 +1,12 @@
 ![Up Only NFTs Banner](./UpOnlyNFTs/assets/banner_image.png)
 
+TODO:
+
+2. Redeploy metadata to IPFS since FTX token is incorrect
+3. Update contract to point at new metadata
+4. Update mint function to random or specific token
+5. Finish trading site: view NFT, make offers, accept offers, revoke offers
+
 # UP ONLY NFTs
 
 Up Only NFTs are a unique collection of experimental NFTs with an innovative price mechanism that ensures tokens can only increase in value. This project implements a novel approach to NFT trading where each transfer must be at a higher price than the previous one.
@@ -11,7 +18,7 @@ The `UpOnly.sol` smart contract introduces several key features:
 - Price can only go up - each sale must be higher than the previous price
 - Built-in offer system with automatic price enforcement
 - Royalty mechanism for sustainable project economics
-- Special "FTX token" easter egg on token #130
+- Special "FTX token" easter egg on token #12
 - Gas-optimized storage and operations
 - Comprehensive security measures
 

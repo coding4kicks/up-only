@@ -283,8 +283,8 @@ describe('UpOnly', function () {
 
       await upOnly
         .connect(addr1)
-        ['offer(uint256)'](130, { value: COSTS.EASTER_EGG });
-      expect(await upOnly.ownerOf(130)).to.equal(addr1.address);
+        ['offer(uint256)'](12, { value: COSTS.EASTER_EGG });
+      expect(await upOnly.ownerOf(12)).to.equal(addr1.address);
     });
 
     it('Should reject easter egg transfer with insufficient premium', async function () {
@@ -301,7 +301,7 @@ describe('UpOnly', function () {
       await expect(
         upOnly
           .connect(addr1)
-          ['offer(uint256)'](130, { value: COSTS.EASTER_EGG_FAIL })
+          ['offer(uint256)'](12, { value: COSTS.EASTER_EGG_FAIL })
       ).to.be.revertedWithCustomError(upOnly, 'OfferTooLow');
     });
   });

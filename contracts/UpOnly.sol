@@ -104,7 +104,7 @@ contract UpOnly is ERC721, IERC7572, ReentrancyGuard {
         tokenData[tokenId].currentOffer = msg.value;
 
         // FTX token easter egg
-        if (tokenId == 130) {
+        if (tokenId == 12) {
             uint256 buffer = tokenData[tokenId].lastPrice * 5 / 100;
             if (tokenData[tokenId].currentOffer <= tokenData[tokenId].lastPrice + buffer) revert OfferTooLow();
             // Approve offerer to transfer all tokens of owner
