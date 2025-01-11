@@ -1,11 +1,6 @@
 ![Up Only NFTs Banner](./UpOnlyNFTs/assets/banner_image.png)
 
-TODO:
-
-2. Redeploy metadata to IPFS since FTX token is incorrect
-3. Update contract to point at new metadata
-4. Update mint function to random or specific token
-5. Finish trading site: view NFT, make offers, accept offers, revoke offers
+TODO: 4. Update mint function to random or specific token 5. Finish trading site: view NFT, make offers, accept offers, revoke offers
 
 # UP ONLY NFTs
 

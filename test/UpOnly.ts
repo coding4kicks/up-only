@@ -7,9 +7,9 @@ import { UpOnly } from '../typechain-types';
 // Constants
 const METADATA = {
   BASE_URI:
-    'ipfs://bafybeifbye646qce3nr4p4gd3qpgrmyfxypaznmjcnvnvwdcdkpjularmu',
+    'ipfs://bafybeie3xrh2gngkin2jr53cb2nn24ayx2hne2tztwhyynu3mf63ijzfam',
   CONTRACT_URI:
-    'ipfs://bafybeifbye646qce3nr4p4gd3qpgrmyfxypaznmjcnvnvwdcdkpjularmu/up-only.json',
+    'ipfs://bafybeie3xrh2gngkin2jr53cb2nn24ayx2hne2tztwhyynu3mf63ijzfam/up-only.json',
   BASE_EXTENSION: '.json'
 };
 

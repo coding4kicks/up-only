@@ -29,8 +29,8 @@ contract UpOnly is ERC721, IERC7572, ReentrancyGuard {
     uint16 public maxMintAmount = 5;
     uint8 public royalty = 3;
     
-    string public baseURI = "ipfs://bafybeifbye646qce3nr4p4gd3qpgrmyfxypaznmjcnvnvwdcdkpjularmu";
-    string public contractURI = "ipfs://bafybeifbye646qce3nr4p4gd3qpgrmyfxypaznmjcnvnvwdcdkpjularmu/up-only.json";
+    string public baseURI = "ipfs://bafybeie3xrh2gngkin2jr53cb2nn24ayx2hne2tztwhyynu3mf63ijzfam";
+    string public contractURI = "ipfs://bafybeie3xrh2gngkin2jr53cb2nn24ayx2hne2tztwhyynu3mf63ijzfam/up-only.json";
     string public baseExtension = ".json";
     address payable public royaltyAddress = payable(0xCdB0Ba3bEE883C1E56b115b39bb0f2315Ce20C16);
 
