@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { nftMetadata } from '@/data/nft-metadata';
 import { useState } from 'react';
 import { getFallbackIPFSUrl } from '@/utils/ipfs';
+import Navbar from '@/components/navbar';
 
 const IPFS_GATEWAY = 'https://gateway.pinata.cloud/ipfs';
 const COLLECTION_IPFS_HASH =
@@ -41,8 +42,9 @@ export default function Home() {
 
   return (
     <div className="min-h-screen">
+      <Navbar />
       {/* Hero Banner */}
-      <div className="relative h-[50vh] w-full">
+      <div className="relative h-[50vh] w-full mt-16">
         <Image
           src={bannerUrl}
           alt="UpOnly Collection Banner"
