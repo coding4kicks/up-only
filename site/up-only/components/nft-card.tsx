@@ -1,3 +1,5 @@
+'use client';
+
 import { useState } from 'react';
 import Image from 'next/image';
 import { Card, CardContent } from './ui/card';
@@ -13,7 +15,6 @@ const NFTCard = ({ id, imageUrl }: NFTCardProps) => {
   const [currentImageUrl, setCurrentImageUrl] = useState(imageUrl);
 
   const handleImageError = () => {
-    // Try next gateway if current one fails
     const nextUrl = getFallbackIPFSUrl(
       imageUrl.split('/ipfs/')[1],
       currentGatewayIndex
@@ -30,6 +31,7 @@ const NFTCard = ({ id, imageUrl }: NFTCardProps) => {
             src={currentImageUrl}
             alt={`UpOnly NFT #${id}`}
             fill
+            loading="lazy"
             className="object-cover"
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             onError={handleImageError}

@@ -5,8 +5,6 @@ import { Button } from '@/components/ui/button';
 const IPFS_GATEWAY = 'https://gateway.pinata.cloud/ipfs';
 const COLLECTION_IPFS_HASH =
   'bafybeigvaawsd6evhlgs2woqtvfeoprrlgvnhibzf4pejycbpniittg32e';
-const BANNER_IPFS_HASH = 'YOUR_BANNER_HASH';
-const LOGO_IPFS_HASH = 'YOUR_LOGO_HASH';
 
 export default function Home() {
   // Generate array of 131 NFTs
@@ -20,11 +18,12 @@ export default function Home() {
       {/* Hero Banner */}
       <div className="relative h-[50vh] w-full">
         <Image
-          src={`${IPFS_GATEWAY}/${BANNER_IPFS_HASH}`}
+          src={`${IPFS_GATEWAY}/${COLLECTION_IPFS_HASH}/banner_image.png`}
           alt="UpOnly Collection Banner"
           fill
+          priority={true}
+          loading="eager"
           className="object-cover"
-          priority
         />
       </div>
 
@@ -33,9 +32,10 @@ export default function Home() {
         <div className="mb-12 flex flex-col items-center text-center">
           <div className="relative h-32 w-32 rounded-full overflow-hidden mb-6">
             <Image
-              src={`${IPFS_GATEWAY}/${LOGO_IPFS_HASH}`}
+              src={`${IPFS_GATEWAY}/${COLLECTION_IPFS_HASH}/collection-image.gif`}
               alt="UpOnly Collection"
               fill
+              loading="eager"
               className="object-cover"
             />
           </div>
