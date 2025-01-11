@@ -177,6 +177,10 @@ npx hardhat help
 4. Push to branch
 5. Create Pull Request
 
+## Test Flight
+
+Test Flight contract address: [0xD7ab6947621DA0b114EbFce082b2B5E49a430F4c](https://sepolia.etherscan.io/address/0xD7ab6947621DA0b114EbFce082b2B5E49a430F4c)
+
 ## License
 
 MIT License
