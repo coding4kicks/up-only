@@ -1,10 +1,10 @@
 {
-  "name": "image",
-  "description": "Up Only image",
-  "image": "ipfs://bafybeigvaawsd6evhlgs2woqtvfeoprrlgvnhibzf4pejycbpniittg32e/collection-image.gif",
-  "external_url": "https://bulletz.xyz/nft/image",
+  "name": "FTX Crypto",
+  "description": "Up Only FTX Crypto",
+  "image": "ipfs://bafybeigvaawsd6evhlgs2woqtvfeoprrlgvnhibzf4pejycbpniittg32e/UpJet-FTX_Crypto.png",
+  "external_url": "https://bulletz.xyz/nft/FTX_Crypto",
   "attributes": {
     "trait_type": "Category",
-    "value": "Assets"
+    "value": "Easter"
   }
 }
