@@ -1,18 +1,13 @@
 import Image from 'next/image';
 import NFTCard from '@/components/nft-card';
 import { Button } from '@/components/ui/button';
+import { nftMetadata } from '@/data/nft-metadata';
 
 const IPFS_GATEWAY = 'https://gateway.pinata.cloud/ipfs';
 const COLLECTION_IPFS_HASH =
   'bafybeigvaawsd6evhlgs2woqtvfeoprrlgvnhibzf4pejycbpniittg32e';
 
 export default function Home() {
-  // Generate array of 131 NFTs
-  const nfts = Array.from({ length: 131 }, (_, i) => ({
-    id: i + 1,
-    imageUrl: `${IPFS_GATEWAY}/${COLLECTION_IPFS_HASH}/${i + 1}.png`
-  }));
-
   return (
     <div className="min-h-screen">
       {/* Hero Banner */}
@@ -52,8 +47,8 @@ export default function Home() {
 
         {/* NFT Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {nfts.map(nft => (
-            <NFTCard key={nft.id} {...nft} />
+          {nftMetadata.map((metadata, index) => (
+            <NFTCard key={index + 1} id={index + 1} metadata={metadata} />
           ))}
         </div>
       </main>
