@@ -9,16 +9,19 @@ import type { NFTMetadata } from '@/types/nft';
 interface NFTCardProps {
   metadata: NFTMetadata;
   id: number;
+  collectionHash: string;
 }
 
-const NFTCard = ({ metadata, id }: NFTCardProps) => {
+const NFTCard = ({ metadata, id, collectionHash }: NFTCardProps) => {
   const [currentGatewayIndex, setCurrentGatewayIndex] = useState(0);
-  const imageUrl = metadata.image.replace('ipfs://', `${IPFS_GATEWAY}/`);
-  const [currentImageUrl, setCurrentImageUrl] = useState(imageUrl);
+  // Get the filename from the last part of the IPFS URL
+  const imageFilename = metadata.image.split('/').pop() || '';
+  const initialUrl = `https://gateway.pinata.cloud/ipfs/${collectionHash}/${imageFilename}`;
+  const [currentImageUrl, setCurrentImageUrl] = useState(initialUrl);
 
   const handleImageError = () => {
     const nextUrl = getFallbackIPFSUrl(
-      imageUrl.split('/ipfs/')[1],
+      `${collectionHash}/${imageFilename}`,
       currentGatewayIndex
     );
     setCurrentImageUrl(nextUrl);
