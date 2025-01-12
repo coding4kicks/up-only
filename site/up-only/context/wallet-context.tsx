@@ -1,8 +1,20 @@
 'use client';
 
-import { createContext, useContext, useState, ReactNode } from 'react';
-import { createPublicClient, createWalletClient, http, custom } from 'viem';
-import { mainnet } from 'viem/chains';
+import {
+  createContext,
+  useContext,
+  useState,
+  ReactNode,
+  useEffect
+} from 'react';
+import {
+  createPublicClient,
+  createWalletClient,
+  http,
+  custom,
+  Chain
+} from 'viem';
+import { mainnet, sepolia } from 'viem/chains';
 
 interface WalletContextType {
   address: `0x${string}` | null;
@@ -20,6 +32,13 @@ const WalletContext = createContext<WalletContextType>({
 
 export function WalletProvider({ children }: { children: ReactNode }) {
   const [address, setAddress] = useState<`0x${string}` | null>(null);
+  const [chain, setChain] = useState<Chain>(mainnet);
+
+  useEffect(() => {
+    const searchParams = new URLSearchParams(window.location.search);
+    const isTest = searchParams.get('test') === 'true';
+    setChain(isTest ? sepolia : mainnet);
+  }, []);
 
   const connect = async () => {
     if (typeof window.ethereum === 'undefined') {
@@ -29,12 +48,12 @@ export function WalletProvider({ children }: { children: ReactNode }) {
 
     try {
       const publicClient = createPublicClient({
-        chain: mainnet,
+        chain,
         transport: http()
       });
 
       const walletClient = createWalletClient({
-        chain: mainnet,
+        chain,
         transport: custom(window.ethereum)
       });
 
