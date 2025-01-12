@@ -8,11 +8,10 @@ import type { NFTMetadata } from '@/types/nft';
 
 interface NFTCardProps {
   metadata: NFTMetadata;
-  id: number;
   collectionHash: string;
 }
 
-const NFTCard = memo(({ metadata, id, collectionHash }: NFTCardProps) => {
+const NFTCard = memo(({ metadata, collectionHash }: NFTCardProps) => {
   const [currentGatewayIndex, setCurrentGatewayIndex] = useState(0);
   const imageFilename = metadata.image.split('/').pop() || '';
   const initialUrl = `https://gateway.pinata.cloud/ipfs/${collectionHash}/${imageFilename}`;

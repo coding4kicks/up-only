@@ -87,7 +87,8 @@ export default function Home() {
                 toast({
                   title: 'Wallet Required',
                   description: 'Please connect your wallet first',
-                  variant: 'destructive'
+                  variant: 'destructive',
+                  duration: 3000
                 });
                 return;
               }
@@ -103,7 +104,6 @@ export default function Home() {
           {nftMetadata.map((metadata, index) => (
             <NFTCard
               key={index + 1}
-              id={index + 1}
               metadata={metadata}
               collectionHash={COLLECTION_IPFS_HASH}
             />
