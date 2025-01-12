@@ -9,10 +9,8 @@ import { getFallbackIPFSUrl } from '@/utils/ipfs';
 import MintModal from '@/components/mint-modal';
 import { useWallet } from '@/context/wallet-context';
 import { useToast } from '@/components/ui/use-toast';
+import { COLLECTION_IPFS_HASH, IPFS_GATEWAY } from '@/lib/constants';
 
-const IPFS_GATEWAY = 'https://gateway.pinata.cloud/ipfs';
-const COLLECTION_IPFS_HASH =
-  'bafybeigvaawsd6evhlgs2woqtvfeoprrlgvnhibzf4pejycbpniittg32e';
 const INITIAL_BANNER_URL = `${IPFS_GATEWAY}/${COLLECTION_IPFS_HASH}/banner_image.png`;
 const INITIAL_LOGO_URL = `${IPFS_GATEWAY}/${COLLECTION_IPFS_HASH}/collection-image.gif`;
 
