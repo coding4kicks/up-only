@@ -15,7 +15,9 @@ const Navbar = () => {
     <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-sm border-b">
       <div className="container mx-auto px-4">
         <div className="flex justify-between items-center h-16">
-          <div className="text-xl font-bold">UpOnly</div>
+          <Link href="/" className="text-xl font-bold hover:opacity-80">
+            UpOnly
+          </Link>
           <div className="flex gap-4 items-center">
             {isConnected && (
               <Link href="/my-nfts">
