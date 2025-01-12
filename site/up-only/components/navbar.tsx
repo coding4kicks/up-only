@@ -3,6 +3,7 @@
 import { Github, Sun, Moon } from 'lucide-react';
 import { Button } from './ui/button';
 import { useTheme } from 'next-themes';
+import WalletConnectButton from './wallet-connect-button';
 
 const Navbar = () => {
   const { theme, setTheme } = useTheme();
@@ -22,6 +23,7 @@ const Navbar = () => {
             >
               <Github className="h-5 w-5" />
             </Button>
+            <WalletConnectButton />
             <Button
               variant="ghost"
               size="icon"
