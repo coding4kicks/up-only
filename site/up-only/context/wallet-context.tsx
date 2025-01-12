@@ -62,12 +62,17 @@ export function WalletProvider({ children }: { children: ReactNode }) {
 
       const walletClient = createWalletClient({
         chain,
-        transport: custom(window.ethereum),
-        account: address as `0x${string}`
-      });
+        transport: custom(window.ethereum)
+      }) as WalletClient;
 
       const [address] = await walletClient.requestAddresses();
       setAddress(address);
+
+      // Update wallet client with account
+      walletClient.account = {
+        address,
+        type: 'json-rpc'
+      } as const;
 
       // Listen for account changes
       window.ethereum.on('accountsChanged', handleAccountsChanged);
