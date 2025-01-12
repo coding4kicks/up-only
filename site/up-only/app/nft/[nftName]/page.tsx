@@ -22,6 +22,7 @@ export default function NFTPage() {
   const [currentImageUrl, setCurrentImageUrl] = useState<string>('');
   const [nft, setNft] = useState<NFTMetadata | null>(null);
   const [nftData, setNftData] = useState<NFTData | null>(null);
+  const [tokenId, setTokenId] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -30,6 +31,9 @@ export default function NFTPage() {
 
     if (foundNft) {
       setNft(foundNft);
+      // Calculate and save tokenId
+      const id = nftMetadata.findIndex(n => n.name === foundNft.name) + 1;
+      setTokenId(id);
       const imageFilename = foundNft.image.split('/').pop() || '';
       setCurrentImageUrl(
         getFallbackIPFSUrl(`${COLLECTION_IPFS_HASH}/${imageFilename}`, 0)
@@ -41,11 +45,7 @@ export default function NFTPage() {
   const fetchNFTData = async (nft: NFTMetadata) => {
     try {
       setIsLoading(true);
-      // Array index is 0-based, so we need to add 1
-      const tokenId = nftMetadata.findIndex(n => n.name === nft.name) + 1;
-      if (tokenId === -1) {
-        throw new Error('NFT not found in metadata');
-      }
+      if (!tokenId) return;
       const data = await getNFTData(tokenId);
       setNftData(data);
     } catch (error) {
@@ -67,8 +67,9 @@ export default function NFTPage() {
   };
 
   const handleMint = async () => {
+    if (!tokenId) return;
     try {
-      await mint(1);
+      await mint(1, tokenId);
       fetchNFTData(nft!);
     } catch (error) {
       console.error('Error minting:', error);

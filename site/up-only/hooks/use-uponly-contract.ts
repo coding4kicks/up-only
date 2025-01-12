@@ -15,7 +15,7 @@ export function useUpOnlyContract() {
   const { walletClient, publicClient, address, contractAddress } = useWallet();
 
   const mint = useCallback(
-    async (amount: number) => {
+    async (amount: number, tokenId?: number) => {
       if (!walletClient || !publicClient || !address) {
         throw new Error('Wallet not connected');
       }
@@ -27,7 +27,7 @@ export function useUpOnlyContract() {
         address: contractAddress,
         abi: UpOnlyArtifact.abi,
         functionName: 'mint',
-        args: [amount],
+        args: tokenId ? [amount, tokenId] : [amount],
         value: totalCost,
         chain: walletClient.chain,
         account: {
