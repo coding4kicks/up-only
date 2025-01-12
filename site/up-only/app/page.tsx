@@ -9,6 +9,7 @@ import { getFallbackIPFSUrl } from '@/utils/ipfs';
 import Navbar from '@/components/navbar';
 import MintModal from '@/components/mint-modal';
 import { useWallet } from '@/context/wallet-context';
+import { useToast } from '@/components/ui/use-toast';
 
 const IPFS_GATEWAY = 'https://gateway.pinata.cloud/ipfs';
 const COLLECTION_IPFS_HASH =
@@ -25,6 +26,7 @@ export default function Home() {
   );
   const [isMintModalOpen, setIsMintModalOpen] = useState(false);
   const { address } = useWallet();
+  const { toast } = useToast();
 
   const handleBannerError = () => {
     const nextUrl = getFallbackIPFSUrl(
@@ -84,7 +86,11 @@ export default function Home() {
             className="font-semibold"
             onClick={() => {
               if (!address) {
-                alert('Please connect your wallet first');
+                toast({
+                  title: 'Wallet Required',
+                  description: 'Please connect your wallet first',
+                  variant: 'destructive'
+                });
                 return;
               }
               setIsMintModalOpen(true);
