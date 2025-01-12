@@ -13,6 +13,8 @@ import { useUpOnlyContract } from '@/hooks/use-uponly-contract';
 import { formatEther } from 'viem';
 import type { NFTMetadata } from '@/types/nft';
 import type { NFTData } from '@/hooks/use-uponly-contract';
+import { Loader2 } from 'lucide-react';
+import { useToast } from '@/components/ui/use-toast';
 
 export default function NFTPage() {
   const params = useParams();
@@ -24,6 +26,8 @@ export default function NFTPage() {
   const [nftData, setNftData] = useState<NFTData | null>(null);
   const [tokenId, setTokenId] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isMinting, setIsMinting] = useState(false);
+  const { toast } = useToast();
 
   useEffect(() => {
     const nftName = (params.nftName as string).replace(/_/g, ' ');
@@ -68,11 +72,30 @@ export default function NFTPage() {
 
   const handleMint = async () => {
     if (!tokenId) return;
+    setIsMinting(true);
     try {
-      await mint(1, tokenId);
-      fetchNFTData(nft!);
+      const tx = await mint(1, tokenId);
+      if (tx.status === 'success') {
+        toast({
+          title: 'NFT Minted Successfully!',
+          description: `You have minted ${nft?.name}.`,
+          duration: 5000
+        });
+        fetchNFTData(nft!);
+      } else {
+        throw new Error('Transaction failed');
+      }
     } catch (error) {
       console.error('Error minting:', error);
+      toast({
+        title: 'Minting Failed',
+        description:
+          error instanceof Error ? error.message : 'Failed to mint NFT',
+        variant: 'destructive',
+        duration: 5000
+      });
+    } finally {
+      setIsMinting(false);
     }
   };
 
@@ -86,8 +109,15 @@ export default function NFTPage() {
           <p className="text-sm text-muted-foreground">
             This NFT hasn't been minted yet
           </p>
-          <Button onClick={handleMint} className="w-full">
-            Mint for 0.01 ETH
+          <Button onClick={handleMint} className="w-full" disabled={isMinting}>
+            {isMinting ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Minting...
+              </>
+            ) : (
+              'Mint for 0.01 ETH'
+            )}
           </Button>
         </div>
       ) : null;
@@ -114,8 +144,15 @@ export default function NFTPage() {
           )}
         </div>
         {!isOwner && isConnected && (
-          <Button onClick={handleMint} className="w-full">
-            Mint for 0.01 ETH
+          <Button onClick={handleMint} className="w-full" disabled={isMinting}>
+            {isMinting ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Minting...
+              </>
+            ) : (
+              'Mint for 0.01 ETH'
+            )}
           </Button>
         )}
       </div>
