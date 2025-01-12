@@ -61,9 +61,6 @@ contract UpOnly is ERC721, IERC7572, ReentrancyGuard {
     error InvalidTransfer();
     error SameAddress();
 
-    // Add mapping to track minted tokens
-    mapping(uint256 => bool) private _tokenMinted;
-
     constructor() ERC721("Test Flight", "UP") {
     }
 
@@ -75,7 +72,7 @@ contract UpOnly is ERC721, IERC7572, ReentrancyGuard {
         uint256 count = 0;
         
         for (uint256 i = 0; i < maxSupply; i++) {
-            if (!_tokenMinted[i]) {
+            if (tokenData[i].lastPrice == 0) {
                 available[count] = i;
                 count++;
             }
@@ -107,7 +104,7 @@ contract UpOnly is ERC721, IERC7572, ReentrancyGuard {
             uint256[] memory available = _getAvailableTokens(mintAmount);
             uint256 availableCount = 0;
             for (uint256 i = 0; i < maxSupply; i++) {
-                if (!_tokenMinted[i]) availableCount++;
+                if (tokenData[i].lastPrice == 0) availableCount++;
             }
 
             unchecked {
@@ -118,7 +115,6 @@ contract UpOnly is ERC721, IERC7572, ReentrancyGuard {
                     // Swap the selected token with the last available token
                     available[randomIndex] = available[availableCount - i - 1];
                     
-                    _tokenMinted[selectedToken] = true;
                     tokenData[selectedToken].lastPrice = cost;
                     _safeMint(msg.sender, selectedToken);
                     
@@ -131,9 +127,8 @@ contract UpOnly is ERC721, IERC7572, ReentrancyGuard {
             // Mint specific token
             if (mintAmount != 1) revert("Can only mint 1 token when specifying ID");
             if (tokenId >= maxSupply) revert("Token ID exceeds max supply");
-            if (_tokenMinted[tokenId]) revert("Token already minted");
+            if (tokenData[tokenId].lastPrice != 0) revert("Token already minted");
             
-            _tokenMinted[tokenId] = true;
             tokenData[tokenId].lastPrice = cost;
             _safeMint(msg.sender, tokenId);
             
