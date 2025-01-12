@@ -14,16 +14,14 @@ import { useToast } from '@/components/ui/use-toast';
 const IPFS_GATEWAY = 'https://gateway.pinata.cloud/ipfs';
 const COLLECTION_IPFS_HASH =
   'bafybeigvaawsd6evhlgs2woqtvfeoprrlgvnhibzf4pejycbpniittg32e';
+const INITIAL_BANNER_URL = `${IPFS_GATEWAY}/${COLLECTION_IPFS_HASH}/banner_image.png`;
+const INITIAL_LOGO_URL = `${IPFS_GATEWAY}/${COLLECTION_IPFS_HASH}/collection-image.gif`;
 
 export default function Home() {
   const [bannerGatewayIndex, setBannerGatewayIndex] = useState(0);
   const [logoGatewayIndex, setLogoGatewayIndex] = useState(0);
-  const [bannerUrl, setBannerUrl] = useState(
-    `${IPFS_GATEWAY}/${COLLECTION_IPFS_HASH}/banner_image.png`
-  );
-  const [logoUrl, setLogoUrl] = useState(
-    `${IPFS_GATEWAY}/${COLLECTION_IPFS_HASH}/collection-image.gif`
-  );
+  const [bannerUrl, setBannerUrl] = useState<string | null>(null);
+  const [logoUrl, setLogoUrl] = useState<string | null>(null);
   const [isMintModalOpen, setIsMintModalOpen] = useState(false);
   const { address } = useWallet();
   const { toast } = useToast();
@@ -52,7 +50,7 @@ export default function Home() {
       {/* Hero Banner */}
       <div className="relative hidden md:block h-[50vh] w-full">
         <MemoizedImage
-          src={bannerUrl}
+          src={bannerUrl || INITIAL_BANNER_URL}
           alt="UpOnly Collection Banner"
           fill
           priority={true}
@@ -67,7 +65,7 @@ export default function Home() {
         <div className="mb-12 flex flex-col items-center text-center">
           <div className="relative h-32 w-32 rounded-full overflow-hidden mb-6">
             <MemoizedImage
-              src={logoUrl}
+              src={logoUrl || INITIAL_LOGO_URL}
               alt="UpOnly Collection"
               fill
               loading="eager"
