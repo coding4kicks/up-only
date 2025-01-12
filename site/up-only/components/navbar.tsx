@@ -1,6 +1,6 @@
 'use client';
 
-import { Github } from 'lucide-react';
+import { Github, Sun, Moon } from 'lucide-react';
 import { Button } from './ui/button';
 import { useTheme } from 'next-themes';
 
@@ -27,11 +27,9 @@ const Navbar = () => {
               size="icon"
               onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
             >
-              {theme === 'dark' ? (
-                <span className="h-5 w-5">🌞</span>
-              ) : (
-                <span className="h-5 w-5">🌙</span>
-              )}
+              <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+              <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+              <span className="sr-only">Toggle theme</span>
             </Button>
           </div>
         </div>
