@@ -41,10 +41,10 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen pt-16">
       <Navbar />
       {/* Hero Banner */}
-      <div className="relative hidden md:block h-[50vh] w-full mt-16">
+      <div className="relative hidden md:block h-[50vh] w-full">
         <Image
           src={bannerUrl}
           alt="UpOnly Collection Banner"
