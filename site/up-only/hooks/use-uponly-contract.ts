@@ -5,6 +5,12 @@ import UpOnlyArtifact from '../../../artifacts/contracts/UpOnly.sol/UpOnly.json'
 import type { NFTMetadata } from '@/types/nft';
 import { nftMetadata } from '@/data/nft-metadata';
 
+export interface NFTData {
+  owner: string;
+  currentOffer: bigint;
+  offerer: string;
+}
+
 export function useUpOnlyContract() {
   const { walletClient, publicClient, address, contractAddress } = useWallet();
 
@@ -205,5 +211,38 @@ export function useUpOnlyContract() {
     }
   }, [publicClient, address, contractAddress]);
 
-  return { mint, getOwnedNFTs, getOffers };
+  const getNFTData = useCallback(
+    async (tokenId: number): Promise<NFTData | null> => {
+      console.log('getNFTData', tokenId);
+      if (!publicClient || !contractAddress) {
+        throw new Error('Wallet not connected');
+      }
+
+      try {
+        // First check if token exists by checking owner
+        await publicClient.readContract({
+          address: contractAddress,
+          abi: UpOnlyArtifact.abi,
+          functionName: 'ownerOf',
+          args: [BigInt(tokenId)]
+        });
+
+        // If we get here, token exists, get its data
+        const data = await publicClient.readContract({
+          address: contractAddress,
+          abi: UpOnlyArtifact.abi,
+          functionName: 'tokenData',
+          args: [BigInt(tokenId)]
+        });
+
+        return data as NFTData;
+      } catch {
+        // Token doesn't exist yet
+        return null;
+      }
+    },
+    [publicClient, contractAddress]
+  );
+
+  return { mint, getOwnedNFTs, getOffers, getNFTData };
 }
