@@ -1,6 +1,6 @@
 'use client';
 
-import Image from 'next/image';
+import MemoizedImage from '@/components/memoized-image';
 import NFTCard from '@/components/nft-card';
 import { Button } from '@/components/ui/button';
 import { nftMetadata } from '@/data/nft-metadata';
@@ -49,7 +49,7 @@ export default function Home() {
       <Navbar />
       {/* Hero Banner */}
       <div className="relative hidden md:block h-[50vh] w-full">
-        <Image
+        <MemoizedImage
           src={bannerUrl}
           alt="UpOnly Collection Banner"
           fill
@@ -64,7 +64,7 @@ export default function Home() {
         {/* Collection Info */}
         <div className="mb-12 flex flex-col items-center text-center">
           <div className="relative h-32 w-32 rounded-full overflow-hidden mb-6">
-            <Image
+            <MemoizedImage
               src={logoUrl}
               alt="UpOnly Collection"
               fill

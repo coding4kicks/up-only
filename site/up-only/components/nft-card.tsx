@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, memo } from 'react';
 import Image from 'next/image';
 import { Card, CardContent } from './ui/card';
 import { getFallbackIPFSUrl } from '@/utils/ipfs';
@@ -12,9 +12,8 @@ interface NFTCardProps {
   collectionHash: string;
 }
 
-const NFTCard = ({ metadata, id, collectionHash }: NFTCardProps) => {
+const NFTCard = memo(({ metadata, id, collectionHash }: NFTCardProps) => {
   const [currentGatewayIndex, setCurrentGatewayIndex] = useState(0);
-  // Get the filename from the last part of the IPFS URL
   const imageFilename = metadata.image.split('/').pop() || '';
   const initialUrl = `https://gateway.pinata.cloud/ipfs/${collectionHash}/${imageFilename}`;
   const [currentImageUrl, setCurrentImageUrl] = useState(initialUrl);
@@ -51,6 +50,8 @@ const NFTCard = ({ metadata, id, collectionHash }: NFTCardProps) => {
       </CardContent>
     </Card>
   );
-};
+});
+
+NFTCard.displayName = 'NFTCard';
 
 export default NFTCard;
