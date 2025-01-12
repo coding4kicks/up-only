@@ -8,6 +8,7 @@ import NFTCard from '@/components/nft-card';
 import { Card, CardContent } from '@/components/ui/card';
 import type { NFTMetadata } from '@/types/nft';
 import { COLLECTION_IPFS_HASH } from '@/lib/constants';
+import Link from 'next/link';
 
 export default function MyNFTs() {
   const { isConnected } = useWallet();
@@ -66,14 +67,16 @@ export default function MyNFTs() {
                 />
               ))
             ) : (
-              <Card className="overflow-hidden">
-                <CardContent className="p-6 flex flex-col items-center justify-center min-h-[300px] text-center">
-                  <p className="text-xl font-semibold mb-2">No NFTs Owned</p>
-                  <p className="text-muted-foreground">
-                    Mint one or make an offer!
-                  </p>
-                </CardContent>
-              </Card>
+              <Link href="/" className="block">
+                <Card className="overflow-hidden transition-all hover:scale-105">
+                  <CardContent className="p-6 flex flex-col items-center justify-center min-h-[300px] text-center">
+                    <p className="text-xl font-semibold mb-2">No NFTs Owned</p>
+                    <p className="text-muted-foreground">
+                      Click here to mint one or make an offer!
+                    </p>
+                  </CardContent>
+                </Card>
+              </Link>
             )}
           </div>
         )}
@@ -94,14 +97,18 @@ export default function MyNFTs() {
                 />
               ))
             ) : (
-              <Card className="overflow-hidden">
-                <CardContent className="p-6 flex flex-col items-center justify-center min-h-[300px] text-center">
-                  <p className="text-xl font-semibold mb-2">No Active Offers</p>
-                  <p className="text-muted-foreground">
-                    Make an offer on the main page!
-                  </p>
-                </CardContent>
-              </Card>
+              <Link href="/" className="block">
+                <Card className="overflow-hidden transition-all hover:scale-105">
+                  <CardContent className="p-6 flex flex-col items-center justify-center min-h-[300px] text-center">
+                    <p className="text-xl font-semibold mb-2">
+                      No Active Offers
+                    </p>
+                    <p className="text-muted-foreground">
+                      Click here to make an offer!
+                    </p>
+                  </CardContent>
+                </Card>
+              </Link>
             )}
           </div>
         )}
