@@ -1,7 +1,5 @@
 ![Up Only NFTs Banner](./UpOnlyNFTs/assets/banner_image.png)
 
-TODO: 4. Update mint function to random or specific token 5. Finish trading site: view NFT, make offers, accept offers, revoke offers
-
 # UP ONLY NFTs
 
 Up Only NFTs are a unique collection of experimental NFTs with an innovative price mechanism that ensures tokens can only increase in value. This project implements a novel approach to NFT trading where each transfer must be at a higher price than the previous one.
@@ -181,7 +179,7 @@ npx hardhat help
 
 ## Test Flight
 
-Test Flight contract address: [0xD7ab6947621DA0b114EbFce082b2B5E49a430F4c](https://sepolia.etherscan.io/address/0xD7ab6947621DA0b114EbFce082b2B5E49a430F4c)
+Test Flight contract address: [0x5837B7De4149E57705d5765d59D6235D5134D808](https://sepolia.etherscan.io/address/0x5837B7De4149E57705d5765d59D6235D5134D808)
 
 ## License
 
