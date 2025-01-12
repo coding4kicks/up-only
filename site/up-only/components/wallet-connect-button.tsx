@@ -19,10 +19,7 @@ export default function WalletConnectButton() {
     <Button variant="ghost" size="icon" onClick={handleClick}>
       {isConnected ? (
         <div className="flex items-center gap-2">
-          <Wallet className="h-[1.2rem] w-[1.2rem]" />
-          <span className="hidden md:inline">
-            {`${address.slice(0, 6)}...${address.slice(-4)}`}
-          </span>
+          <span>{`${address.slice(0, 6)}`}</span>
         </div>
       ) : (
         <>
