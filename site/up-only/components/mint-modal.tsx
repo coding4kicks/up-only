@@ -6,7 +6,8 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogDescription
+  DialogDescription,
+  DialogFooter
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import {
@@ -19,6 +20,8 @@ import {
 import { useWallet } from '@/context/wallet-context';
 import { parseEther, formatEther } from 'viem';
 import { useUpOnlyContract } from '@/hooks/use-uponly-contract';
+import { Loader2 } from 'lucide-react';
+import { useToast } from '@/components/ui/use-toast';
 
 interface MintModalProps {
   isOpen: boolean;
@@ -33,6 +36,7 @@ export default function MintModal({ isOpen, onClose }: MintModalProps) {
   const [isMinting, setIsMinting] = useState(false);
   const { address } = useWallet();
   const { mint } = useUpOnlyContract();
+  const { toast } = useToast();
 
   const handleMint = async () => {
     if (!address) return;
@@ -40,19 +44,32 @@ export default function MintModal({ isOpen, onClose }: MintModalProps) {
     setIsMinting(true);
     try {
       const tx = await mint(Number(amount));
-      console.log('Minted successfully:', tx);
+      toast({
+        title: 'NFTs Minted Successfully!',
+        description: `You have minted ${amount} NFT${
+          Number(amount) > 1 ? 's' : ''
+        }.`,
+        duration: 5000
+      });
+      onClose();
     } catch (error) {
       console.error('Error minting:', error);
+      toast({
+        title: 'Minting Failed',
+        description:
+          error instanceof Error ? error.message : 'Failed to mint NFTs',
+        variant: 'destructive',
+        duration: 5000
+      });
     } finally {
       setIsMinting(false);
-      onClose();
     }
   };
 
   const totalCost = Number(amount) * MINT_COST;
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog open={isOpen} onOpenChange={open => !isMinting && onClose()}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Mint UpOnly NFTs</DialogTitle>
@@ -80,14 +97,23 @@ export default function MintModal({ isOpen, onClose }: MintModalProps) {
             </Select>
             <span className="text-muted-foreground">Cost: {totalCost} ETH</span>
           </div>
+        </div>
+        <DialogFooter>
           <Button
             onClick={handleMint}
             disabled={!address || isMinting}
             className="w-full"
           >
-            {isMinting ? 'Minting...' : 'Mint'}
+            {isMinting ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Minting...
+              </>
+            ) : (
+              'Mint'
+            )}
           </Button>
-        </div>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );
