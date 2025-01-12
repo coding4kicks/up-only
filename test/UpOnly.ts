@@ -1,7 +1,7 @@
 import { loadFixture } from '@nomicfoundation/hardhat-toolbox/network-helpers';
 import { expect } from 'chai';
 import { ethers } from 'hardhat';
-import { Contract, ContractTransactionResponse } from 'ethers';
+import { Contract, ContractTransactionResponse, EventLog } from 'ethers';
 import { UpOnly } from '../typechain-types';
 
 // Constants
@@ -70,8 +70,8 @@ describe('UpOnly', function () {
     const receipt = await tx.wait();
     const mintEvent = receipt?.logs.find(
       (log: any) => log.fragment?.name === 'Mint'
-    );
-    return mintEvent?.args?.token;
+    ) as EventLog;
+    return mintEvent?.args?.[0];
   }
 
   describe('Deployment', function () {
@@ -208,18 +208,18 @@ describe('UpOnly', function () {
       const tokenId = await getTokenIdFromMintTx(tx);
 
       // Verify event parameters
-      expect(mintEvent?.args?.token).to.equal(tokenId);
-      expect(mintEvent?.args?.owner).to.equal(owner.address);
-      expect(mintEvent?.args?.amount).to.equal(1);
-      expect(mintEvent?.args?.cost).to.equal(COSTS.MINT);
-      expect(mintEvent?.args?.supply).to.equal(1);
+      expect((mintEvent as EventLog)?.args?.[0]).to.equal(tokenId);
+      expect((mintEvent as EventLog)?.args?.[1]).to.equal(owner.address);
+      expect((mintEvent as EventLog)?.args?.[2]).to.equal(1);
+      expect((mintEvent as EventLog)?.args?.[3]).to.equal(COSTS.MINT);
+      expect((mintEvent as EventLog)?.args?.[4]).to.equal(1);
     });
 
     it('Should mint specific token ID', async function () {
       const { upOnly, owner } = await loadFixture(deployFixture);
       const tokenId = 42;
 
-      await upOnly.mint(1, tokenId, { value: COSTS.MINT });
+      await upOnly['mint(uint256,uint256)'](1, tokenId, { value: COSTS.MINT });
       expect(await upOnly.ownerOf(tokenId)).to.equal(owner.address);
     });
 
@@ -227,9 +227,9 @@ describe('UpOnly', function () {
       const { upOnly, owner } = await loadFixture(deployFixture);
       const tokenId = 42;
 
-      await upOnly.mint(1, tokenId, { value: COSTS.MINT });
+      await upOnly['mint(uint256,uint256)'](1, tokenId, { value: COSTS.MINT });
       await expect(
-        upOnly.mint(1, tokenId, { value: COSTS.MINT })
+        upOnly['mint(uint256,uint256)'](1, tokenId, { value: COSTS.MINT })
       ).to.be.revertedWith('Token already minted');
     });
 
@@ -244,9 +244,8 @@ describe('UpOnly', function () {
 
       // Get receipt and find all Mint events
       const receipt = await tx.wait();
-      const mintEvents = receipt?.logs.filter(
-        (log: any) => log.fragment?.name === 'Mint'
-      );
+      const mintEvents =
+        receipt?.logs.filter((log: any) => log.fragment?.name === 'Mint') ?? [];
 
       // Verify tokens are unique
       const tokenIds = new Set(
@@ -403,7 +402,9 @@ describe('UpOnly', function () {
 
     it('Should handle easter egg forced transfer', async function () {
       const { upOnly, owner, addr1 } = await loadFixture(deployFixture);
-      const tx = await upOnly.mint(1, 12, { value: COSTS.MINT }); // Mint token 12 specifically
+      const tx = await upOnly['mint(uint256,uint256)'](1, 12, {
+        value: COSTS.MINT
+      }); // Mint token 12 specifically
 
       await upOnly
         .connect(addr1)
@@ -413,7 +414,9 @@ describe('UpOnly', function () {
 
     it('Should reject easter egg transfer with insufficient premium', async function () {
       const { upOnly, owner, addr1 } = await loadFixture(deployFixture);
-      const tx = await upOnly.mint(1, 12, { value: COSTS.MINT }); // Mint token 12 specifically
+      const tx = await upOnly['mint(uint256,uint256)'](1, 12, {
+        value: COSTS.MINT
+      }); // Mint token 12 specifically
 
       await expect(
         upOnly
