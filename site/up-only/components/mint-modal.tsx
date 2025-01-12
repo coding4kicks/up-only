@@ -42,15 +42,19 @@ export default function MintModal({ isOpen, onClose }: MintModalProps) {
 
     setIsMinting(true);
     try {
-      await mint(Number(amount));
-      toast({
-        title: 'NFTs Minted Successfully!',
-        description: `You have minted ${amount} NFT${
-          Number(amount) > 1 ? 's' : ''
-        }.`,
-        duration: 5000
-      });
-      onClose();
+      const tx = await mint(Number(amount));
+      if (tx.status === 'success') {
+        toast({
+          title: 'NFTs Minted Successfully!',
+          description: `You have minted ${amount} NFT${
+            Number(amount) > 1 ? 's' : ''
+          }.`,
+          duration: 5000
+        });
+        onClose();
+      } else {
+        throw new Error('Transaction failed');
+      }
     } catch (error) {
       console.error('Error minting:', error);
       toast({

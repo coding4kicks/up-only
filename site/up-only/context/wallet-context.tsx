@@ -18,6 +18,9 @@ import {
 } from 'viem';
 import { mainnet, sepolia } from 'viem/chains';
 
+const TEST_CONTRACT_ADDRESS = '0x5837B7De4149E57705d5765d59D6235D5134D808';
+const MAINNET_CONTRACT_ADDRESS = '0x0000000000000000000000000000000000000000'; // Placeholder for future mainnet contract
+
 interface WalletContextType {
   address: `0x${string}` | null;
   isConnected: boolean;
@@ -25,6 +28,7 @@ interface WalletContextType {
   disconnect: () => void;
   walletClient: WalletClient | null;
   publicClient: PublicClient | null;
+  contractAddress: `0x${string}`;
 }
 
 const WalletContext = createContext<WalletContextType>({
@@ -33,7 +37,8 @@ const WalletContext = createContext<WalletContextType>({
   connect: async () => {},
   disconnect: () => {},
   walletClient: null,
-  publicClient: null
+  publicClient: null,
+  contractAddress: MAINNET_CONTRACT_ADDRESS as `0x${string}`
 });
 
 export function WalletProvider({ children }: { children: ReactNode }) {
@@ -41,11 +46,19 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   const [chain, setChain] = useState<Chain>(mainnet);
   const [walletClient, setWalletClient] = useState<WalletClient | null>(null);
   const [publicClient, setPublicClient] = useState<PublicClient | null>(null);
+  const [contractAddress, setContractAddress] = useState<`0x${string}`>(
+    MAINNET_CONTRACT_ADDRESS as `0x${string}`
+  );
 
   useEffect(() => {
     const searchParams = new URLSearchParams(window.location.search);
     const isTest = searchParams.get('test') === 'true';
     setChain(isTest ? sepolia : mainnet);
+    setContractAddress(
+      (isTest
+        ? TEST_CONTRACT_ADDRESS
+        : MAINNET_CONTRACT_ADDRESS) as `0x${string}`
+    );
   }, []);
 
   const connect = async () => {
@@ -55,6 +68,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     }
 
     try {
+      // Create clients first
       const publicClient = createPublicClient({
         chain,
         transport: http()
@@ -65,21 +79,23 @@ export function WalletProvider({ children }: { children: ReactNode }) {
         transport: custom(window.ethereum)
       }) as WalletClient;
 
-      const [address] = await walletClient.requestAddresses();
-      setAddress(address);
+      // Get address
+      const [newAddress] = await walletClient.requestAddresses();
 
       // Update wallet client with account
       walletClient.account = {
-        address,
+        address: newAddress,
         type: 'json-rpc'
       } as const;
 
-      // Listen for account changes
-      window.ethereum.on('accountsChanged', handleAccountsChanged);
-      window.ethereum.on('chainChanged', handleChainChanged);
-
+      // Set state after everything is configured
+      setAddress(newAddress);
       setWalletClient(walletClient);
       setPublicClient(publicClient);
+
+      // Add listeners
+      window.ethereum.on('accountsChanged', handleAccountsChanged);
+      window.ethereum.on('chainChanged', handleChainChanged);
     } catch (error) {
       console.error('Error connecting wallet:', error);
     }
@@ -113,7 +129,8 @@ export function WalletProvider({ children }: { children: ReactNode }) {
         connect,
         disconnect,
         walletClient,
-        publicClient
+        publicClient,
+        contractAddress
       }}
     >
       {children}

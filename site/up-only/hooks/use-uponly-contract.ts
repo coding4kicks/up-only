@@ -3,32 +3,41 @@ import { parseEther } from 'viem';
 import { useWallet } from '@/context/wallet-context';
 import UpOnlyArtifact from '../../../artifacts/contracts/UpOnly.sol/UpOnly.json';
 
-const CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS;
-
 export function useUpOnlyContract() {
-  const { walletClient, publicClient, address } = useWallet();
+  const { walletClient, publicClient, address, contractAddress } = useWallet();
 
   const mint = useCallback(
     async (amount: number) => {
-      if (!walletClient || !CONTRACT_ADDRESS) return;
+      if (!walletClient || !publicClient || !address) {
+        throw new Error('Wallet not connected');
+      }
 
-      const cost = parseEther('0.01'); // 0.01 ETH per NFT
+      const cost = parseEther('0.01');
       const totalCost = cost * BigInt(amount);
 
       const hash = await walletClient.writeContract({
-        address: CONTRACT_ADDRESS as `0x${string}`,
+        address: contractAddress,
         abi: UpOnlyArtifact.abi,
         functionName: 'mint',
         args: [amount],
         value: totalCost,
         chain: walletClient.chain,
-        account: address as `0x${string}`
+        account: {
+          address,
+          type: 'json-rpc'
+        }
       });
 
-      const receipt = await publicClient?.waitForTransactionReceipt({ hash });
+      // Wait for transaction to be confirmed
+      const receipt = await publicClient.waitForTransactionReceipt({ hash });
+
+      if (receipt.status === 'reverted') {
+        throw new Error('Transaction failed');
+      }
+
       return receipt;
     },
-    [walletClient, publicClient, address]
+    [walletClient, publicClient, address, contractAddress]
   );
 
   return { mint };
