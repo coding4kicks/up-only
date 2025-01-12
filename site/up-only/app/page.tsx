@@ -7,6 +7,8 @@ import { nftMetadata } from '@/data/nft-metadata';
 import { useState } from 'react';
 import { getFallbackIPFSUrl } from '@/utils/ipfs';
 import Navbar from '@/components/navbar';
+import MintModal from '@/components/mint-modal';
+import { useWallet } from '@/context/wallet-context';
 
 const IPFS_GATEWAY = 'https://gateway.pinata.cloud/ipfs';
 const COLLECTION_IPFS_HASH =
@@ -21,6 +23,8 @@ export default function Home() {
   const [logoUrl, setLogoUrl] = useState(
     `${IPFS_GATEWAY}/${COLLECTION_IPFS_HASH}/collection-image.gif`
   );
+  const [isMintModalOpen, setIsMintModalOpen] = useState(false);
+  const { address } = useWallet();
 
   const handleBannerError = () => {
     const nextUrl = getFallbackIPFSUrl(
@@ -75,7 +79,17 @@ export default function Home() {
             crypto markets. Each piece captures the essence of the unstoppable
             upward trajectory.
           </p>
-          <Button size="lg" className="font-semibold">
+          <Button
+            size="lg"
+            className="font-semibold"
+            onClick={() => {
+              if (!address) {
+                alert('Please connect your wallet first');
+                return;
+              }
+              setIsMintModalOpen(true);
+            }}
+          >
             Mint Now
           </Button>
         </div>
@@ -92,6 +106,10 @@ export default function Home() {
           ))}
         </div>
       </main>
+      <MintModal
+        isOpen={isMintModalOpen}
+        onClose={() => setIsMintModalOpen(false)}
+      />
     </div>
   );
 }
