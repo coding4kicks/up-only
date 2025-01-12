@@ -18,7 +18,6 @@ import {
   SelectValue
 } from '@/components/ui/select';
 import { useWallet } from '@/context/wallet-context';
-import { parseEther, formatEther } from 'viem';
 import { useUpOnlyContract } from '@/hooks/use-uponly-contract';
 import { Loader2 } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
@@ -43,7 +42,7 @@ export default function MintModal({ isOpen, onClose }: MintModalProps) {
 
     setIsMinting(true);
     try {
-      const tx = await mint(Number(amount));
+      await mint(Number(amount));
       toast({
         title: 'NFTs Minted Successfully!',
         description: `You have minted ${amount} NFT${
@@ -69,7 +68,7 @@ export default function MintModal({ isOpen, onClose }: MintModalProps) {
   const totalCost = Number(amount) * MINT_COST;
 
   return (
-    <Dialog open={isOpen} onOpenChange={open => !isMinting && onClose()}>
+    <Dialog open={isOpen} onOpenChange={() => !isMinting && onClose()}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Mint UpOnly NFTs</DialogTitle>

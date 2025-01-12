@@ -12,7 +12,9 @@ import {
   createWalletClient,
   http,
   custom,
-  Chain
+  Chain,
+  WalletClient,
+  PublicClient
 } from 'viem';
 import { mainnet, sepolia } from 'viem/chains';
 
@@ -21,18 +23,24 @@ interface WalletContextType {
   isConnected: boolean;
   connect: () => Promise<void>;
   disconnect: () => void;
+  walletClient: WalletClient | null;
+  publicClient: PublicClient | null;
 }
 
 const WalletContext = createContext<WalletContextType>({
   address: null,
   isConnected: false,
   connect: async () => {},
-  disconnect: () => {}
+  disconnect: () => {},
+  walletClient: null,
+  publicClient: null
 });
 
 export function WalletProvider({ children }: { children: ReactNode }) {
   const [address, setAddress] = useState<`0x${string}` | null>(null);
   const [chain, setChain] = useState<Chain>(mainnet);
+  const [walletClient, setWalletClient] = useState<WalletClient | null>(null);
+  const [publicClient, setPublicClient] = useState<PublicClient | null>(null);
 
   useEffect(() => {
     const searchParams = new URLSearchParams(window.location.search);
@@ -54,7 +62,8 @@ export function WalletProvider({ children }: { children: ReactNode }) {
 
       const walletClient = createWalletClient({
         chain,
-        transport: custom(window.ethereum)
+        transport: custom(window.ethereum),
+        account: address as `0x${string}`
       });
 
       const [address] = await walletClient.requestAddresses();
@@ -63,6 +72,9 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       // Listen for account changes
       window.ethereum.on('accountsChanged', handleAccountsChanged);
       window.ethereum.on('chainChanged', handleChainChanged);
+
+      setWalletClient(walletClient);
+      setPublicClient(publicClient);
     } catch (error) {
       console.error('Error connecting wallet:', error);
     }
@@ -94,7 +106,9 @@ export function WalletProvider({ children }: { children: ReactNode }) {
         address,
         isConnected: !!address,
         connect,
-        disconnect
+        disconnect,
+        walletClient,
+        publicClient
       }}
     >
       {children}
