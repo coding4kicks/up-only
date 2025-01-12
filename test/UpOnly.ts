@@ -24,7 +24,7 @@ const COSTS = {
 
 const LIMITS = {
   MAX_SUPPLY: 131,
-  MAX_MINT_AMOUNT: 5
+  MAX_MINT_AMOUNT: 10
 };
 
 const ROYALTY = {
@@ -47,9 +47,12 @@ describe('UpOnly', function () {
     amount: number,
     signer: any
   ) {
-    await contract
+    const tx = await contract
       .connect(signer)
-      .mint(amount, { value: COSTS.MINT * BigInt(amount) });
+      ['mint(uint256,uint256)'](amount, 0, {
+        value: COSTS.MINT * BigInt(amount)
+      });
+    return tx;
   }
 
   // Helper to setup royalty signer
@@ -60,6 +63,15 @@ describe('UpOnly', function () {
       value: ethers.parseEther('1.0')
     });
     return signer;
+  }
+
+  // Helper to get token ID from mint transaction
+  async function getTokenIdFromMintTx(tx: any) {
+    const receipt = await tx.wait();
+    const mintEvent = receipt?.logs.find(
+      (log: any) => log.fragment?.name === 'Mint'
+    );
+    return mintEvent?.args?.token;
   }
 
   describe('Deployment', function () {
@@ -86,9 +98,13 @@ describe('UpOnly', function () {
       const ownerAddress = await owner.getAddress();
 
       expect(await upOnly.balanceOf(ownerAddress)).to.equal(0);
-      await upOnly.mint(1, { value: COSTS.MINT });
+      const tx = await upOnly['mint(uint256,uint256)'](1, 0, {
+        value: COSTS.MINT
+      });
       expect(await upOnly.balanceOf(ownerAddress)).to.equal(1);
-      expect(await upOnly.ownerOf(0)).to.equal(ownerAddress);
+
+      const tokenId = await getTokenIdFromMintTx(tx);
+      expect(await upOnly.ownerOf(tokenId)).to.equal(ownerAddress);
     });
 
     it('Should enforce minimum price', async function () {
@@ -96,7 +112,9 @@ describe('UpOnly', function () {
       const belowCost = COSTS.MINT - BigInt(1);
 
       await expect(
-        upOnly.mint(1, { value: belowCost })
+        upOnly['mint(uint256,uint256)'](1, 0, {
+          value: belowCost
+        })
       ).to.be.revertedWithCustomError(upOnly, 'InsufficientPayment');
     });
 
@@ -104,22 +122,31 @@ describe('UpOnly', function () {
       const { upOnly, owner, addr1, addr2 } = await loadFixture(deployFixture);
 
       // First mint
-      await mintTokens(upOnly, 1, owner);
-      expect(await upOnly.ownerOf(0)).to.equal(owner.address);
+      const tx1 = await upOnly.connect(owner)['mint(uint256,uint256)'](1, 0, {
+        value: COSTS.MINT
+      });
+      const ownerTokenId = await getTokenIdFromMintTx(tx1);
+      expect(await upOnly.ownerOf(ownerTokenId)).to.equal(owner.address);
 
       // Second mint
-      await mintTokens(upOnly, 1, addr1);
-      expect(await upOnly.ownerOf(1)).to.equal(addr1.address);
+      const tx2 = await upOnly.connect(addr1)['mint(uint256,uint256)'](1, 0, {
+        value: COSTS.MINT
+      });
+      const addr1TokenId = await getTokenIdFromMintTx(tx2);
+      expect(await upOnly.ownerOf(addr1TokenId)).to.equal(addr1.address);
 
       // Third mint
-      await mintTokens(upOnly, 1, addr2);
-      expect(await upOnly.ownerOf(2)).to.equal(addr2.address);
+      const tx3 = await upOnly.connect(addr2)['mint(uint256,uint256)'](1, 0, {
+        value: COSTS.MINT
+      });
+      const addr2TokenId = await getTokenIdFromMintTx(tx3);
+      expect(await upOnly.ownerOf(addr2TokenId)).to.equal(addr2.address);
     });
 
     it('Should allow minting up to max mint amount per wallet', async function () {
       const { upOnly, owner } = await loadFixture(deployFixture);
 
-      await upOnly.mint(LIMITS.MAX_MINT_AMOUNT, {
+      await upOnly['mint(uint256,uint256)'](LIMITS.MAX_MINT_AMOUNT, 0, {
         value: COSTS.MINT * BigInt(LIMITS.MAX_MINT_AMOUNT)
       });
 
@@ -128,24 +155,24 @@ describe('UpOnly', function () {
       );
 
       await expect(
-        upOnly.mint(1, { value: COSTS.MINT })
+        upOnly['mint(uint256,uint256)'](1, 0, { value: COSTS.MINT })
       ).to.be.revertedWithCustomError(upOnly, 'ExceedsMaxMintAmount');
     });
 
     it('Should enforce max supply limit', async function () {
       const { upOnly, addresses } = await loadFixture(deployFixture);
 
-      // Mint 130 tokens (26 addresses * 5 tokens each)
-      for (let i = 0; i < 26; i++) {
+      // Mint 130 tokens (13 addresses * 10 tokens each)
+      for (let i = 0; i < 13; i++) {
         await mintTokens(upOnly, LIMITS.MAX_MINT_AMOUNT, addresses[i]);
       }
 
       // Mint the last token
-      await mintTokens(upOnly, 1, addresses[26]);
+      await mintTokens(upOnly, 1, addresses[13]);
 
       // Try to mint one more
       await expect(
-        mintTokens(upOnly, 1, addresses[27])
+        mintTokens(upOnly, 1, addresses[14])
       ).to.be.revertedWithCustomError(upOnly, 'ExceedsMaxSupply');
     });
 
@@ -166,22 +193,105 @@ describe('UpOnly', function () {
     it('Should emit Mint event with correct parameters', async function () {
       const { upOnly, owner } = await loadFixture(deployFixture);
 
-      await expect(upOnly.mint(1, { value: COSTS.MINT }))
-        .to.emit(upOnly, 'Mint')
-        .withArgs(0, owner.address, 1, COSTS.MINT, 1);
+      const tx = await upOnly['mint(uint256,uint256)'](1, 0, {
+        value: COSTS.MINT
+      });
+      const receipt = await tx.wait();
+
+      // Find the Mint event
+      const mintEvent = receipt?.logs.find(
+        (log: any) => log.fragment?.name === 'Mint'
+      );
+      expect(mintEvent).to.not.be.undefined;
+
+      // Get the actual minted token ID
+      const tokenId = await getTokenIdFromMintTx(tx);
+
+      // Verify event parameters
+      expect(mintEvent?.args?.token).to.equal(tokenId);
+      expect(mintEvent?.args?.owner).to.equal(owner.address);
+      expect(mintEvent?.args?.amount).to.equal(1);
+      expect(mintEvent?.args?.cost).to.equal(COSTS.MINT);
+      expect(mintEvent?.args?.supply).to.equal(1);
+    });
+
+    it('Should mint specific token ID', async function () {
+      const { upOnly, owner } = await loadFixture(deployFixture);
+      const tokenId = 42;
+
+      await upOnly.mint(1, tokenId, { value: COSTS.MINT });
+      expect(await upOnly.ownerOf(tokenId)).to.equal(owner.address);
+    });
+
+    it('Should reject minting already minted token', async function () {
+      const { upOnly, owner } = await loadFixture(deployFixture);
+      const tokenId = 42;
+
+      await upOnly.mint(1, tokenId, { value: COSTS.MINT });
+      await expect(
+        upOnly.mint(1, tokenId, { value: COSTS.MINT })
+      ).to.be.revertedWith('Token already minted');
+    });
+
+    it('Should mint multiple random tokens', async function () {
+      const { upOnly, owner } = await loadFixture(deployFixture);
+      const mintAmount = 5;
+
+      const tx = await upOnly['mint(uint256,uint256)'](mintAmount, 0, {
+        value: COSTS.MINT * BigInt(mintAmount)
+      });
+      expect(await upOnly.balanceOf(owner.address)).to.equal(mintAmount);
+
+      // Get receipt and find all Mint events
+      const receipt = await tx.wait();
+      const mintEvents = receipt?.logs.filter(
+        (log: any) => log.fragment?.name === 'Mint'
+      );
+
+      // Verify tokens are unique
+      const tokenIds = new Set(
+        mintEvents.map((event: any) => event.args.token)
+      );
+      expect(tokenIds.size).to.equal(mintAmount);
+
+      // Verify ownership of each token
+      for (const tokenId of tokenIds) {
+        expect(await upOnly.ownerOf(tokenId)).to.equal(owner.address);
+      }
+    });
+
+    it('Should allow minting up to new max mint amount per wallet', async function () {
+      const { upOnly, owner } = await loadFixture(deployFixture);
+
+      // Mint max amount
+      await upOnly['mint(uint256,uint256)'](LIMITS.MAX_MINT_AMOUNT, 0, {
+        value: COSTS.MINT * BigInt(LIMITS.MAX_MINT_AMOUNT)
+      });
+
+      expect(await upOnly.balanceOf(owner.address)).to.equal(
+        LIMITS.MAX_MINT_AMOUNT
+      );
+
+      // Try to mint one more
+      await expect(
+        upOnly['mint(uint256,uint256)'](1, 0, { value: COSTS.MINT })
+      ).to.be.revertedWithCustomError(upOnly, 'ExceedsMaxMintAmount');
     });
   });
 
   describe('Offers', function () {
     it('Should handle offers correctly', async function () {
       const { upOnly, owner, addr1 } = await loadFixture(deployFixture);
-      await mintTokens(upOnly, 1, owner);
+      const tx = await mintTokens(upOnly, 1, owner);
+      const tokenId = await getTokenIdFromMintTx(tx);
 
       const contractAddress = await upOnly.getAddress();
       const contractBalanceBefore = await ethers.provider.getBalance(
         contractAddress
       );
-      await upOnly.connect(addr1)['offer(uint256)'](0, { value: COSTS.TWO });
+      await upOnly
+        .connect(addr1)
+        ['offer(uint256)'](tokenId, { value: COSTS.TWO });
 
       expect(
         await ethers.provider.getBalance(contractAddress)
@@ -190,12 +300,13 @@ describe('UpOnly', function () {
 
     it('Should allow owners to make offers to themselves', async function () {
       const { upOnly, owner } = await loadFixture(deployFixture);
+      const tx = await mintTokens(upOnly, 1, owner);
+      const tokenId = await getTokenIdFromMintTx(tx);
 
-      await mintTokens(upOnly, 1, owner);
       const contractAddress = await upOnly.getAddress();
       const balanceBefore = await ethers.provider.getBalance(contractAddress);
 
-      await upOnly['offer(uint256)'](0, { value: COSTS.TWO });
+      await upOnly['offer(uint256)'](tokenId, { value: COSTS.TWO });
 
       expect(
         await ethers.provider.getBalance(contractAddress)
@@ -204,21 +315,25 @@ describe('UpOnly', function () {
 
     it('Should reject offers below previous price', async function () {
       const { upOnly, owner, addr1 } = await loadFixture(deployFixture);
+      const tx = await mintTokens(upOnly, 1, owner);
+      const tokenId = await getTokenIdFromMintTx(tx);
 
-      await mintTokens(upOnly, 1, owner);
       await expect(
-        upOnly.connect(addr1)['offer(uint256)'](0, { value: COSTS.MINT })
+        upOnly.connect(addr1)['offer(uint256)'](tokenId, { value: COSTS.MINT })
       ).to.be.revertedWithCustomError(upOnly, 'OfferTooLow');
     });
 
     it('Should allow offer revocation', async function () {
       const { upOnly, owner, addr1 } = await loadFixture(deployFixture);
+      const tx = await mintTokens(upOnly, 1, owner);
+      const tokenId = await getTokenIdFromMintTx(tx);
 
-      await mintTokens(upOnly, 1, owner);
-      await upOnly.connect(addr1)['offer(uint256)'](0, { value: COSTS.TWO });
+      await upOnly
+        .connect(addr1)
+        ['offer(uint256)'](tokenId, { value: COSTS.TWO });
 
       const balanceBefore = await ethers.provider.getBalance(addr1.address);
-      await upOnly.connect(addr1).revoke(0);
+      await upOnly.connect(addr1).revoke(tokenId);
 
       expect(await ethers.provider.getBalance(addr1.address)).to.be.greaterThan(
         balanceBefore
@@ -227,12 +342,15 @@ describe('UpOnly', function () {
 
     it('Should prevent unauthorized offer revocation', async function () {
       const { upOnly, owner, addr1, addr2 } = await loadFixture(deployFixture);
+      const tx = await mintTokens(upOnly, 1, owner);
+      const tokenId = await getTokenIdFromMintTx(tx);
 
-      await mintTokens(upOnly, 1, owner);
-      await upOnly.connect(addr1)['offer(uint256)'](0, { value: COSTS.TWO });
+      await upOnly
+        .connect(addr1)
+        ['offer(uint256)'](tokenId, { value: COSTS.TWO });
 
       await expect(
-        upOnly.connect(addr2).revoke(0)
+        upOnly.connect(addr2).revoke(tokenId)
       ).to.be.revertedWithCustomError(upOnly, 'Unauthorized');
     });
   });
@@ -240,46 +358,52 @@ describe('UpOnly', function () {
   describe('Transfers', function () {
     it('Should handle transfers with valid offers', async function () {
       const { upOnly, owner, addr1 } = await loadFixture(deployFixture);
-      await mintTokens(upOnly, 1, owner);
+      const tx = await mintTokens(upOnly, 1, owner);
+      const tokenId = await getTokenIdFromMintTx(tx);
 
-      await upOnly.connect(addr1)['offer(uint256)'](0, { value: COSTS.TWO });
-      await upOnly.transferFrom(owner.address, addr1.address, 0);
+      await upOnly
+        .connect(addr1)
+        ['offer(uint256)'](tokenId, { value: COSTS.TWO });
+      await upOnly.transferFrom(owner.address, addr1.address, tokenId);
 
-      expect(await upOnly.ownerOf(0)).to.equal(addr1.address);
+      expect(await upOnly.ownerOf(tokenId)).to.equal(addr1.address);
     });
 
     it('Should handle approved transfers with valid offers', async function () {
       const { upOnly, owner, addr1, addr2 } = await loadFixture(deployFixture);
+      const tx = await mintTokens(upOnly, 1, owner);
+      const tokenId = await getTokenIdFromMintTx(tx);
 
-      await mintTokens(upOnly, 1, owner);
-      await upOnly.connect(addr1)['offer(uint256)'](0, { value: COSTS.TWO });
-      await upOnly.approve(addr2.address, 0);
+      await upOnly
+        .connect(addr1)
+        ['offer(uint256)'](tokenId, { value: COSTS.TWO });
+      await upOnly.approve(addr2.address, tokenId);
 
-      await upOnly.connect(addr2).transferFrom(owner.address, addr1.address, 0);
-      expect(await upOnly.ownerOf(0)).to.equal(addr1.address);
+      await upOnly
+        .connect(addr2)
+        .transferFrom(owner.address, addr1.address, tokenId);
+      expect(await upOnly.ownerOf(tokenId)).to.equal(addr1.address);
     });
 
     it('Should handle operator transfers with valid offers', async function () {
       const { upOnly, owner, addr1, addr2 } = await loadFixture(deployFixture);
+      const tx = await mintTokens(upOnly, 1, owner);
+      const tokenId = await getTokenIdFromMintTx(tx);
 
-      await mintTokens(upOnly, 1, owner);
-      await upOnly.connect(addr1)['offer(uint256)'](0, { value: COSTS.TWO });
+      await upOnly
+        .connect(addr1)
+        ['offer(uint256)'](tokenId, { value: COSTS.TWO });
       await upOnly.setApprovalForAll(addr2.address, true);
 
-      await upOnly.connect(addr2).transferFrom(owner.address, addr1.address, 0);
-      expect(await upOnly.ownerOf(0)).to.equal(addr1.address);
+      await upOnly
+        .connect(addr2)
+        .transferFrom(owner.address, addr1.address, tokenId);
+      expect(await upOnly.ownerOf(tokenId)).to.equal(addr1.address);
     });
 
     it('Should handle easter egg forced transfer', async function () {
-      const { upOnly, owner, addr1, addresses } = await loadFixture(
-        deployFixture
-      );
-
-      // Mint all tokens except the last one
-      for (let i = 0; i < 26; i++) {
-        await mintTokens(upOnly, LIMITS.MAX_MINT_AMOUNT, addresses[i]);
-      }
-      await mintTokens(upOnly, 1, owner);
+      const { upOnly, owner, addr1 } = await loadFixture(deployFixture);
+      const tx = await upOnly.mint(1, 12, { value: COSTS.MINT }); // Mint token 12 specifically
 
       await upOnly
         .connect(addr1)
@@ -288,15 +412,8 @@ describe('UpOnly', function () {
     });
 
     it('Should reject easter egg transfer with insufficient premium', async function () {
-      const { upOnly, owner, addr1, addresses } = await loadFixture(
-        deployFixture
-      );
-
-      // Mint all tokens except the last one
-      for (let i = 0; i < 26; i++) {
-        await mintTokens(upOnly, LIMITS.MAX_MINT_AMOUNT, addresses[i]);
-      }
-      await mintTokens(upOnly, 1, owner);
+      const { upOnly, owner, addr1 } = await loadFixture(deployFixture);
+      const tx = await upOnly.mint(1, 12, { value: COSTS.MINT }); // Mint token 12 specifically
 
       await expect(
         upOnly

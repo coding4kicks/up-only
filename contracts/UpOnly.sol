@@ -26,7 +26,7 @@ contract UpOnly is ERC721, IERC7572, ReentrancyGuard {
     uint96 public cost = 0.01 ether;
     uint96 public maxSupply = 131;
     uint32 public supply = 0;
-    uint16 public maxMintAmount = 5;
+    uint16 public maxMintAmount = 10;
     uint8 public royalty = 3;
     
     string public baseURI = "ipfs://bafybeie3xrh2gngkin2jr53cb2nn24ayx2hne2tztwhyynu3mf63ijzfam";
@@ -61,30 +61,97 @@ contract UpOnly is ERC721, IERC7572, ReentrancyGuard {
     error InvalidTransfer();
     error SameAddress();
 
+    // Add mapping to track minted tokens
+    mapping(uint256 => bool) private _tokenMinted;
+
     constructor() ERC721("Test Flight", "UP") {
     }
 
-    // Mint `mintAmount` to `mgs.sender` at `cost` per token up to `maxMintAmount` and `maxSupply`
-    function mint(uint256 mintAmount) public payable nonReentrant {
+    // New function to get available tokens
+    function _getAvailableTokens(uint256 amount) private view returns (uint256[] memory) {
+        require(amount <= maxSupply, "Amount exceeds max supply");
+        
+        uint256[] memory available = new uint256[](maxSupply);
+        uint256 count = 0;
+        
+        for (uint256 i = 0; i < maxSupply; i++) {
+            if (!_tokenMinted[i]) {
+                available[count] = i;
+                count++;
+            }
+        }
+        
+        require(count >= amount, "Not enough tokens available");
+        return available;
+    }
+
+    // New function to get random number - Note: Not cryptographically secure
+    function _random(uint256 seed, uint256 max) private view returns (uint256) {
+        return uint256(keccak256(abi.encodePacked(
+            block.timestamp,
+            block.prevrandao,
+            msg.sender,
+            seed
+        ))) % max;
+    }
+
+    // Updated mint function to handle specific token ID or random minting
+    function mint(uint256 mintAmount, uint256 tokenId) public payable nonReentrant {
         if (mintAmount == 0) revert ZeroMintAmount();
         if (mintAmount + balanceOf(msg.sender) > maxMintAmount) revert ExceedsMaxMintAmount();
         if (supply + mintAmount > maxSupply) revert ExceedsMaxSupply();
         if (msg.value < cost * mintAmount) revert InsufficientPayment();
 
-        uint256 tokenId = supply;
-        unchecked {
-            for (uint256 i = 0; i < mintAmount; i++) {
-                tokenData[tokenId + i].lastPrice = cost;
-                _safeMint(msg.sender, tokenId + i);
+        // If tokenId is 0, mint random tokens
+        if (tokenId == 0) {
+            uint256[] memory available = _getAvailableTokens(mintAmount);
+            uint256 availableCount = 0;
+            for (uint256 i = 0; i < maxSupply; i++) {
+                if (!_tokenMinted[i]) availableCount++;
             }
-            supply = uint32(supply + mintAmount);
-        }
 
-        emit Mint(tokenId, msg.sender, mintAmount, msg.value, supply);
+            unchecked {
+                for (uint256 i = 0; i < mintAmount; i++) {
+                    uint256 randomIndex = _random(i, availableCount - i);
+                    uint256 selectedToken = available[randomIndex];
+                    
+                    // Swap the selected token with the last available token
+                    available[randomIndex] = available[availableCount - i - 1];
+                    
+                    _tokenMinted[selectedToken] = true;
+                    tokenData[selectedToken].lastPrice = cost;
+                    _safeMint(msg.sender, selectedToken);
+                    
+                    // Emit event for each token
+                    emit Mint(selectedToken, msg.sender, 1, msg.value / mintAmount, supply + i + 1);
+                }
+                supply = uint32(supply + mintAmount);
+            }
+        } else {
+            // Mint specific token
+            if (mintAmount != 1) revert("Can only mint 1 token when specifying ID");
+            if (tokenId >= maxSupply) revert("Token ID exceeds max supply");
+            if (_tokenMinted[tokenId]) revert("Token already minted");
+            
+            _tokenMinted[tokenId] = true;
+            tokenData[tokenId].lastPrice = cost;
+            _safeMint(msg.sender, tokenId);
+            
+            unchecked {
+                supply = uint32(supply + 1);
+            }
+            
+            emit Mint(tokenId, msg.sender, 1, msg.value, supply);
+        }
 
         // External call after state changes
         (bool success, ) = royaltyAddress.call{value: msg.value}("");
         require(success, "Failed to pay mint");
+    }
+
+    // Update overloaded mint function
+    function mint(uint256 mintAmount) public payable {
+        mint(mintAmount, 0); // Use 0 for random minting
     }
 
     // Override transferFrom of OZ ERC-721. 
