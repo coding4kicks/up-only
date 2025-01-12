@@ -213,7 +213,6 @@ export function useUpOnlyContract() {
 
   const getNFTData = useCallback(
     async (tokenId: number): Promise<NFTData | null> => {
-      console.log('getNFTData', tokenId);
       if (!publicClient || !contractAddress) {
         throw new Error('Wallet not connected');
       }

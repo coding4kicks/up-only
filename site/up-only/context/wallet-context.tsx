@@ -45,7 +45,12 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   const [address, setAddress] = useState<`0x${string}` | null>(null);
   const [chain, setChain] = useState<Chain>(mainnet);
   const [walletClient, setWalletClient] = useState<WalletClient | null>(null);
-  const [publicClient, setPublicClient] = useState<PublicClient | null>(null);
+  const [publicClient, setPublicClient] = useState<PublicClient>(() =>
+    createPublicClient({
+      chain: mainnet,
+      transport: http()
+    })
+  );
   const [contractAddress, setContractAddress] = useState<`0x${string}`>(
     MAINNET_CONTRACT_ADDRESS as `0x${string}`
   );
@@ -53,7 +58,17 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const searchParams = new URLSearchParams(window.location.search);
     const isTest = searchParams.get('test') === 'true';
-    setChain(isTest ? sepolia : mainnet);
+    const newChain = isTest ? sepolia : mainnet;
+    setChain(newChain);
+
+    // Update publicClient when chain changes
+    setPublicClient(
+      createPublicClient({
+        chain: newChain,
+        transport: http()
+      })
+    );
+
     setContractAddress(
       (isTest
         ? TEST_CONTRACT_ADDRESS
@@ -68,12 +83,6 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     }
 
     try {
-      // Create clients first
-      const publicClient = createPublicClient({
-        chain,
-        transport: http()
-      });
-
       const walletClient = createWalletClient({
         chain,
         transport: custom(window.ethereum)
@@ -91,7 +100,6 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       // Set state after everything is configured
       setAddress(newAddress);
       setWalletClient(walletClient);
-      setPublicClient(publicClient);
 
       // Add listeners
       window.ethereum.on('accountsChanged', handleAccountsChanged);

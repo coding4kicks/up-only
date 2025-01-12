@@ -42,14 +42,21 @@ export default function NFTPage() {
       setCurrentImageUrl(
         getFallbackIPFSUrl(`${COLLECTION_IPFS_HASH}/${imageFilename}`, 0)
       );
-      fetchNFTData(foundNft);
     }
   }, [params.nftName]);
 
-  const fetchNFTData = async (nft: NFTMetadata) => {
+  // Separate useEffect for fetching NFT data
+  useEffect(() => {
+    if (tokenId) {
+      fetchNFTData();
+    }
+  }, [tokenId]);
+
+  const fetchNFTData = async () => {
+    if (!tokenId || !nft) return;
+
     try {
       setIsLoading(true);
-      if (!tokenId) return;
       const data = await getNFTData(tokenId);
       setNftData(data);
     } catch (error) {
@@ -100,7 +107,7 @@ export default function NFTPage() {
   };
 
   const renderOwnershipInfo = () => {
-    if (isLoading) return <p>Loading...</p>;
+    if (isLoading) return <p className="text-muted-foreground">Loading...</p>;
 
     // NFT hasn't been minted yet
     if (!nftData) {
@@ -128,7 +135,7 @@ export default function NFTPage() {
       nftData.owner &&
       nftData.owner.toLowerCase() === address.toLowerCase();
     const hasOffer = nftData.currentOffer > BigInt(0);
-
+    console.log('nftData', nftData, isOwner, hasOffer);
     return (
       <div className="space-y-4">
         <div className="bg-secondary p-3 rounded-lg space-y-2">
