@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { parseEther } from 'viem';
+import { parseEther, Log, decodeEventLog } from 'viem';
 import { useWallet } from '@/context/wallet-context';
 import UpOnlyArtifact from '../../../artifacts/contracts/UpOnly.sol/UpOnly.json';
 import type { NFTMetadata } from '@/types/nft';
@@ -48,47 +48,83 @@ export function useUpOnlyContract() {
     }
 
     try {
-      // Get current supply
-      const supply = await publicClient.readContract({
-        address: contractAddress,
-        abi: UpOnlyArtifact.abi,
-        functionName: 'supply'
-      });
-
       // Get recent mint events (last 1000 blocks)
       const currentBlock = await publicClient.getBlockNumber();
       const fromBlock = currentBlock - BigInt(1000);
 
-      const mintEvents = await publicClient.getContractEvents({
-        address: contractAddress,
-        abi: UpOnlyArtifact.abi,
-        eventName: 'Mint',
-        fromBlock
-      });
-
-      // Get recent transfer events
-      const transferEvents = await publicClient.getContractEvents({
-        address: contractAddress,
-        abi: UpOnlyArtifact.abi,
-        eventName: 'Transfer',
-        fromBlock,
-        args: {
-          to: address
-        }
-      });
-
       // Combine token IDs from both events
       const potentialTokens = new Set<number>();
 
-      mintEvents.forEach(event => {
-        if (event.args?.owner === address) {
-          potentialTokens.add(Number(event.args.token));
-        }
-      });
+      try {
+        // Handle mint events
+        const mintEvents =
+          (await publicClient.getContractEvents({
+            address: contractAddress,
+            abi: UpOnlyArtifact.abi,
+            eventName: 'Mint',
+            fromBlock
+          })) ?? [];
 
-      transferEvents.forEach(event => {
-        potentialTokens.add(Number(event.args?.tokenId));
-      });
+        // Handle transfer events
+        const transferEvents =
+          (await publicClient.getContractEvents({
+            address: contractAddress,
+            abi: UpOnlyArtifact.abi,
+            eventName: 'Transfer',
+            fromBlock,
+            args: {
+              to: address
+            }
+          })) ?? [];
+
+        // Process mint events
+        for (const event of mintEvents) {
+          try {
+            const decoded = decodeEventLog({
+              abi: UpOnlyArtifact.abi,
+              data: event.data,
+              topics: event.topics,
+              eventName: 'Mint'
+            });
+            // Handle decoded args as an object instead of array
+            const args = decoded.args as unknown as {
+              token: bigint;
+              owner: string;
+              amount: bigint;
+              cost: bigint;
+              supply: bigint;
+            };
+
+            if (args.owner === address) {
+              potentialTokens.add(Number(args.token));
+            }
+          } catch (err) {
+            console.error('Error processing mint event:', err);
+          }
+        }
+
+        // Process transfer events
+        for (const event of transferEvents) {
+          try {
+            const decoded = decodeEventLog({
+              abi: UpOnlyArtifact.abi,
+              data: event.data,
+              topics: event.topics,
+              eventName: 'Transfer'
+            });
+            const args = decoded.args as unknown as {
+              from: string;
+              to: string;
+              tokenId: bigint;
+            };
+            potentialTokens.add(Number(args.tokenId));
+          } catch (err) {
+            console.error('Error processing transfer event:', err);
+          }
+        }
+      } catch (error) {
+        console.error('Error processing events:', error);
+      }
 
       // Verify current ownership of potential tokens
       const ownedTokenIds = new Set<number>();
@@ -96,17 +132,17 @@ export function useUpOnlyContract() {
       await Promise.all(
         Array.from(potentialTokens).map(async tokenId => {
           try {
-            const owner = await publicClient.readContract({
+            const owner = (await publicClient.readContract({
               address: contractAddress,
               abi: UpOnlyArtifact.abi,
               functionName: 'ownerOf',
               args: [BigInt(tokenId)]
-            });
+            })) as `0x${string}`;
 
             if (owner.toLowerCase() === address.toLowerCase()) {
               ownedTokenIds.add(tokenId);
             }
-          } catch (error) {
+          } catch {
             // Token doesn't exist or ownership changed
             return;
           }
@@ -123,5 +159,51 @@ export function useUpOnlyContract() {
     }
   }, [publicClient, address, contractAddress]);
 
-  return { mint, getOwnedNFTs };
+  const getOffers = useCallback(async (): Promise<NFTMetadata[]> => {
+    if (!publicClient || !address || !contractAddress) {
+      throw new Error('Wallet not connected');
+    }
+
+    try {
+      // Get recent offer events (last 1000 blocks)
+      const currentBlock = await publicClient.getBlockNumber();
+      const fromBlock = currentBlock - BigInt(1000);
+
+      const offerEvents = await publicClient.getContractEvents({
+        address: contractAddress,
+        abi: UpOnlyArtifact.abi,
+        eventName: 'Offer',
+        fromBlock,
+        args: {
+          recipient: address
+        }
+      });
+
+      // Get current offers
+      const offeredTokenIds = new Set<number>();
+
+      offerEvents.forEach((event: Log) => {
+        const decoded = decodeEventLog({
+          abi: UpOnlyArtifact.abi,
+          data: event.data,
+          topics: event.topics,
+          eventName: 'Offer'
+        });
+        const token = (
+          decoded.args as unknown as [bigint, string, string, bigint]
+        )[0];
+        offeredTokenIds.add(Number(token));
+      });
+
+      // Map token IDs to metadata
+      return Array.from(offeredTokenIds)
+        .map(id => nftMetadata[id])
+        .filter(Boolean);
+    } catch (error) {
+      console.error('Error fetching offers:', error);
+      throw error;
+    }
+  }, [publicClient, address, contractAddress]);
+
+  return { mint, getOwnedNFTs, getOffers };
 }
