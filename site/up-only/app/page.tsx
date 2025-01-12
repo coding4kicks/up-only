@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/button';
 import { nftMetadata } from '@/data/nft-metadata';
 import { useState } from 'react';
 import { getFallbackIPFSUrl } from '@/utils/ipfs';
-import Navbar from '@/components/navbar';
 import MintModal from '@/components/mint-modal';
 import { useWallet } from '@/context/wallet-context';
 import { useToast } from '@/components/ui/use-toast';
@@ -46,7 +45,6 @@ export default function Home() {
 
   return (
     <div className="min-h-screen pt-16">
-      <Navbar />
       {/* Hero Banner */}
       <div className="relative hidden md:block h-[50vh] w-full">
         <MemoizedImage
