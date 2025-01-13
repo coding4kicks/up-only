@@ -16,6 +16,7 @@ import type { NFTData } from '@/hooks/use-uponly-contract';
 import { Loader2 } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import OfferModal from '@/components/offer-modal';
+import { truncateAddress } from '@/lib/utils';
 
 export default function NFTPage() {
   const params = useParams();
@@ -132,16 +133,25 @@ export default function NFTPage() {
     setIsOfferModalOpen(true);
   };
 
-  const renderOwnershipInfo = () => {
+  const renderNFTInfo = () => {
     if (isLoading) return <p className="text-muted-foreground">Loading...</p>;
 
     // NFT hasn't been minted yet
     if (!nftData) {
       return (
         <div className="space-y-4">
-          <p className="text-sm text-muted-foreground">
-            This NFT hasn't been minted yet
-          </p>
+          <div className="bg-secondary p-4 rounded-lg space-y-3">
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-muted-foreground">Category</span>
+              <span className="text-sm font-medium">
+                {nft?.attributes.value}
+              </span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-muted-foreground">Status</span>
+              <span className="text-sm font-medium">Available to Mint</span>
+            </div>
+          </div>
           <Button onClick={handleMint} className="w-full" disabled={isMinting}>
             {isMinting ? (
               <>
@@ -169,22 +179,37 @@ export default function NFTPage() {
 
     return (
       <div className="space-y-4">
-        <div className="bg-secondary p-3 rounded-lg space-y-2">
-          <p className="text-sm">
-            <span className="font-medium">Owner: </span>
-            {nftData.owner}
-          </p>
+        <div className="bg-secondary p-4 rounded-lg space-y-3">
+          <div className="flex justify-between items-center">
+            <span className="text-sm text-muted-foreground">Category</span>
+            <span className="text-sm font-medium">{nft?.attributes.value}</span>
+          </div>
+          <div className="flex justify-between items-center">
+            <span className="text-sm text-muted-foreground">Owner</span>
+            <span
+              className="text-sm font-medium hover:cursor-help"
+              title={nftData.owner}
+            >
+              {truncateAddress(nftData.owner)}
+            </span>
+          </div>
           {hasLastPrice && (
-            <p className="text-sm">
-              <span className="font-medium">Last Price: </span>
-              {formatEther(nftData.lastPrice)} ETH
-            </p>
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-muted-foreground">Last Price</span>
+              <span className="text-sm font-medium">
+                {formatEther(nftData.lastPrice)} ETH
+              </span>
+            </div>
           )}
           {hasOffer && (
-            <p className="text-sm">
-              <span className="font-medium">Current Offer: </span>
-              {formatEther(nftData.currentOffer)} ETH
-            </p>
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-muted-foreground">
+                Current Offer
+              </span>
+              <span className="text-sm font-medium">
+                {formatEther(nftData.currentOffer)} ETH
+              </span>
+            </div>
           )}
         </div>
         {!isOwner && !isOfferer && (
@@ -222,17 +247,7 @@ export default function NFTPage() {
                 </div>
                 <div>
                   <h1 className="text-3xl font-bold mb-4">{nft.name}</h1>
-                  <div className="space-y-4">
-                    <div>
-                      <div className="bg-secondary p-3 rounded-lg">
-                        <p className="text-sm">
-                          <span className="font-medium">Category: </span>
-                          {nft.attributes.value}
-                        </p>
-                      </div>
-                    </div>
-                    {renderOwnershipInfo()}
-                  </div>
+                  {renderNFTInfo()}
                 </div>
               </div>
             </CardContent>
