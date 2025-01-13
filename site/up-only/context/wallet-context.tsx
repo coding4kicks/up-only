@@ -17,9 +17,7 @@ import {
   PublicClient
 } from 'viem';
 import { mainnet, sepolia } from 'viem/chains';
-
-const TEST_CONTRACT_ADDRESS = '0xa8Fe01276CDba2f22D10A4Ef908c90f24E7df709';
-const MAINNET_CONTRACT_ADDRESS = '0x0000000000000000000000000000000000000000'; // Placeholder for future mainnet contract
+import { CONTRACT_ADDRESSES } from '@/lib/constants';
 
 interface WalletContextType {
   address: `0x${string}` | null;
@@ -38,7 +36,7 @@ const WalletContext = createContext<WalletContextType>({
   disconnect: () => {},
   walletClient: null,
   publicClient: null,
-  contractAddress: MAINNET_CONTRACT_ADDRESS as `0x${string}`
+  contractAddress: CONTRACT_ADDRESSES.MAINNET as `0x${string}`
 });
 
 export function WalletProvider({ children }: { children: ReactNode }) {
@@ -52,7 +50,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     })
   );
   const [contractAddress, setContractAddress] = useState<`0x${string}`>(
-    MAINNET_CONTRACT_ADDRESS as `0x${string}`
+    CONTRACT_ADDRESSES.MAINNET as `0x${string}`
   );
 
   useEffect(() => {
@@ -71,8 +69,8 @@ export function WalletProvider({ children }: { children: ReactNode }) {
 
     setContractAddress(
       (isTest
-        ? TEST_CONTRACT_ADDRESS
-        : MAINNET_CONTRACT_ADDRESS) as `0x${string}`
+        ? CONTRACT_ADDRESSES.TEST
+        : CONTRACT_ADDRESSES.MAINNET) as `0x${string}`
     );
   }, []);
 
