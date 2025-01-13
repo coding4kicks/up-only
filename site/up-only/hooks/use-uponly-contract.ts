@@ -146,39 +146,76 @@ export function useUpOnlyContract() {
     }
 
     try {
-      // Get recent offer events (last 1000 blocks)
       const currentBlock = await publicClient.getBlockNumber();
-      const fromBlock = currentBlock - BigInt(1000);
+      const fromBlock = currentBlock - BigInt(100000); // Look back further
 
+      // Get ALL Offer events for the contract (without filtering)
       const offerEvents = await publicClient.getContractEvents({
         address: contractAddress,
         abi: UpOnlyArtifact.abi,
         eventName: 'Offer',
-        fromBlock,
-        args: {
-          recipient: address
+        fromBlock
+      });
+
+      // Track potential offers
+      const potentialOffers = new Set<number>();
+
+      // Process offer events chronologically
+      for (const event of offerEvents) {
+        try {
+          const decoded = decodeEventLog({
+            abi: UpOnlyArtifact.abi,
+            data: event.data,
+            topics: event.topics,
+            eventName: 'Offer'
+          });
+          const args = decoded.args as unknown as {
+            token: bigint;
+            recipient: string;
+            owner: string;
+            amount: bigint;
+          };
+
+          const tokenId = Number(args.token);
+          const offererAddress = args.owner.toLowerCase();
+          const userAddress = address.toLowerCase();
+
+          if (offererAddress === userAddress) {
+            potentialOffers.add(tokenId);
+          }
+        } catch (err) {
+          console.error('Error processing offer event:', err);
         }
-      });
+      }
 
-      // Get current offers
-      const offeredTokenIds = new Set<number>();
+      // Verify current offers
+      const confirmedOffers = new Set<number>();
 
-      offerEvents.forEach((event: Log) => {
-        const decoded = decodeEventLog({
-          abi: UpOnlyArtifact.abi,
-          data: event.data,
-          topics: event.topics,
-          eventName: 'Offer'
-        });
-        const token = (
-          decoded.args as unknown as [bigint, string, string, bigint]
-        )[0];
-        offeredTokenIds.add(Number(token));
-      });
+      await Promise.all(
+        Array.from(potentialOffers).map(async tokenId => {
+          try {
+            const tokenData = (await publicClient.readContract({
+              address: contractAddress,
+              abi: UpOnlyArtifact.abi,
+              functionName: 'tokenData',
+              args: [BigInt(tokenId)]
+            })) as [bigint, bigint, string];
+
+            const [_, __, offerer] = tokenData;
+
+            if (offerer.toLowerCase() === address.toLowerCase()) {
+              confirmedOffers.add(tokenId);
+            }
+          } catch {
+            // Token doesn't exist or offer was revoked
+            return;
+          }
+        })
+      );
 
       // Map token IDs to metadata
-      return Array.from(offeredTokenIds)
-        .map(id => nftMetadata[id])
+      return Array.from(confirmedOffers)
+        .map(id => nftMetadata[id - 1]) // Adjust index since tokenIds start at 1
         .filter(Boolean);
     } catch (error) {
       console.error('Error fetching offers:', error);
