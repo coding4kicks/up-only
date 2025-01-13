@@ -149,7 +149,10 @@ export function useUpOnlyContract() {
       const currentBlock = await publicClient.getBlockNumber();
       const fromBlock = currentBlock - BigInt(100000); // Look back further
 
-      // Get ALL Offer events for the contract (without filtering)
+      // Track active offers by token ID
+      const activeOffers = new Map<number, boolean>();
+
+      // Get Offer events
       const offerEvents = await publicClient.getContractEvents({
         address: contractAddress,
         abi: UpOnlyArtifact.abi,
@@ -157,42 +160,69 @@ export function useUpOnlyContract() {
         fromBlock
       });
 
-      // Track potential offers
-      const potentialOffers = new Set<number>();
+      // Get Transfer events (to detect when NFTs change hands)
+      const transferEvents = await publicClient.getContractEvents({
+        address: contractAddress,
+        abi: UpOnlyArtifact.abi,
+        eventName: 'Transfer',
+        fromBlock
+      });
 
-      // Process offer events chronologically
-      for (const event of offerEvents) {
+      // Process events chronologically
+      const allEvents = [...offerEvents, ...transferEvents].sort((a, b) =>
+        Number(a.blockNumber - b.blockNumber)
+      );
+
+      for (const event of allEvents) {
         try {
-          const decoded = decodeEventLog({
-            abi: UpOnlyArtifact.abi,
-            data: event.data,
-            topics: event.topics,
-            eventName: 'Offer'
-          });
-          const args = decoded.args as unknown as {
-            token: bigint;
-            recipient: string;
-            owner: string;
-            amount: bigint;
-          };
+          if (event.eventName === 'Offer') {
+            const decoded = decodeEventLog({
+              abi: UpOnlyArtifact.abi,
+              data: event.data,
+              topics: event.topics,
+              eventName: 'Offer'
+            });
+            const args = decoded.args as unknown as {
+              token: bigint;
+              recipient: string;
+              owner: string;
+              offer: bigint;
+            };
 
-          const tokenId = Number(args.token);
-          const offererAddress = args.owner.toLowerCase();
-          const userAddress = address.toLowerCase();
+            const tokenId = Number(args.token);
+            const offererAddress = args.recipient.toLowerCase();
+            const userAddress = address.toLowerCase();
 
-          if (offererAddress === userAddress) {
-            potentialOffers.add(tokenId);
+            if (offererAddress === userAddress) {
+              activeOffers.set(tokenId, true);
+            }
+          } else if (event.eventName === 'Transfer') {
+            const decoded = decodeEventLog({
+              abi: UpOnlyArtifact.abi,
+              data: event.data,
+              topics: event.topics,
+              eventName: 'Transfer'
+            });
+            const args = decoded.args as unknown as {
+              from: string;
+              to: string;
+              tokenId: bigint;
+            };
+
+            const tokenId = Number(args.tokenId);
+            activeOffers.delete(tokenId);
           }
         } catch (err) {
-          console.error('Error processing offer event:', err);
+          console.error('Error processing event:', err);
+          console.error('Event data:', event);
         }
       }
 
-      // Verify current offers
+      // Verify current state of offers
       const confirmedOffers = new Set<number>();
 
       await Promise.all(
-        Array.from(potentialOffers).map(async tokenId => {
+        Array.from(activeOffers.keys()).map(async tokenId => {
           try {
             const tokenData = (await publicClient.readContract({
               address: contractAddress,
@@ -215,7 +245,7 @@ export function useUpOnlyContract() {
 
       // Map token IDs to metadata
       return Array.from(confirmedOffers)
-        .map(id => nftMetadata[id - 1]) // Adjust index since tokenIds start at 1
+        .map(id => nftMetadata[id - 1])
         .filter(Boolean);
     } catch (error) {
       console.error('Error fetching offers:', error);
