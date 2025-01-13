@@ -108,6 +108,7 @@ export default function NFTPage() {
 
   const renderOwnershipInfo = () => {
     if (isLoading) return <p className="text-muted-foreground">Loading...</p>;
+
     // NFT hasn't been minted yet
     if (!nftData) {
       return (
@@ -134,6 +135,8 @@ export default function NFTPage() {
       nftData.owner &&
       nftData.owner.toLowerCase() === address.toLowerCase();
     const hasOffer = nftData.currentOffer > BigInt(0);
+    const hasLastPrice = nftData.lastPrice > BigInt(0);
+    console.log('hasLastPrice', nftData);
     return (
       <div className="space-y-4">
         <div className="bg-secondary p-3 rounded-lg space-y-2">
@@ -141,6 +144,12 @@ export default function NFTPage() {
             <span className="font-medium">Owner: </span>
             {nftData.owner}
           </p>
+          {hasLastPrice && (
+            <p className="text-sm">
+              <span className="font-medium">Last Price: </span>
+              {formatEther(nftData.lastPrice)} ETH
+            </p>
+          )}
           {hasOffer && (
             <p className="text-sm">
               <span className="font-medium">Current Offer: </span>

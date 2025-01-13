@@ -7,6 +7,7 @@ import { nftMetadata } from '@/data/nft-metadata';
 
 export interface NFTData {
   owner: string;
+  lastPrice: bigint;
   currentOffer: bigint;
   offerer: string;
 }
@@ -219,21 +220,31 @@ export function useUpOnlyContract() {
 
       try {
         // First check if token exists by checking owner
-        await publicClient.readContract({
+        const owner = (await publicClient.readContract({
           address: contractAddress,
           abi: UpOnlyArtifact.abi,
           functionName: 'ownerOf',
           args: [BigInt(tokenId)]
-        });
+        })) as `0x${string}`;
 
         // If we get here, token exists, get its data
-        const data = await publicClient.readContract({
+        const tokenData = (await publicClient.readContract({
           address: contractAddress,
           abi: UpOnlyArtifact.abi,
           functionName: 'tokenData',
           args: [BigInt(tokenId)]
-        });
-        return data as NFTData;
+        })) as [bigint, bigint, string];
+
+        // Map array response to object properties
+        const [lastPrice, currentOffer, offerer] = tokenData;
+
+        // Return combined data
+        return {
+          owner,
+          lastPrice,
+          currentOffer,
+          offerer
+        };
       } catch {
         // Token doesn't exist yet
         return null;
