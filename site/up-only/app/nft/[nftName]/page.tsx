@@ -10,11 +10,12 @@ import { COLLECTION_IPFS_HASH } from '@/lib/constants';
 import { getFallbackIPFSUrl } from '@/utils/ipfs';
 import { useWallet } from '@/context/wallet-context';
 import { useUpOnlyContract } from '@/hooks/use-uponly-contract';
-import { formatEther } from 'viem';
+import { formatEther, parseEther } from 'viem';
 import type { NFTMetadata } from '@/types/nft';
 import type { NFTData } from '@/hooks/use-uponly-contract';
 import { Loader2 } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
+import OfferModal from '@/components/offer-modal';
 
 export default function NFTPage() {
   const params = useParams();
@@ -28,6 +29,7 @@ export default function NFTPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isMinting, setIsMinting] = useState(false);
   const { toast } = useToast();
+  const [isOfferModalOpen, setIsOfferModalOpen] = useState(false);
 
   useEffect(() => {
     const nftName = (params.nftName as string).replace(/_/g, ' ');
@@ -79,6 +81,17 @@ export default function NFTPage() {
 
   const handleMint = async () => {
     if (!tokenId) return;
+
+    if (!isConnected) {
+      toast({
+        title: 'Wallet Not Connected',
+        description: 'Please connect your wallet to mint',
+        variant: 'destructive',
+        duration: 5000
+      });
+      return;
+    }
+
     setIsMinting(true);
     try {
       const tx = await mint(1, tokenId);
@@ -104,6 +117,19 @@ export default function NFTPage() {
     } finally {
       setIsMinting(false);
     }
+  };
+
+  const handleOfferClick = () => {
+    if (!isConnected) {
+      toast({
+        title: 'Wallet Not Connected',
+        description: 'Please connect your wallet to make an offer',
+        variant: 'destructive',
+        duration: 5000
+      });
+      return;
+    }
+    setIsOfferModalOpen(true);
   };
 
   const renderOwnershipInfo = () => {
@@ -134,9 +160,13 @@ export default function NFTPage() {
       address &&
       nftData.owner &&
       nftData.owner.toLowerCase() === address.toLowerCase();
+    const isOfferer =
+      address &&
+      nftData.offerer &&
+      nftData.offerer.toLowerCase() === address.toLowerCase();
     const hasOffer = nftData.currentOffer > BigInt(0);
     const hasLastPrice = nftData.lastPrice > BigInt(0);
-    console.log('hasLastPrice', nftData);
+
     return (
       <div className="space-y-4">
         <div className="bg-secondary p-3 rounded-lg space-y-2">
@@ -157,16 +187,9 @@ export default function NFTPage() {
             </p>
           )}
         </div>
-        {!isOwner && isConnected && (
-          <Button onClick={handleMint} className="w-full" disabled={isMinting}>
-            {isMinting ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Minting...
-              </>
-            ) : (
-              'Mint for 0.01 ETH'
-            )}
+        {!isOwner && !isOfferer && (
+          <Button onClick={handleOfferClick} className="w-full">
+            Make Offer
           </Button>
         )}
       </div>
@@ -182,38 +205,48 @@ export default function NFTPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 pt-24">
-      <div className="max-w-4xl mx-auto">
-        <Card>
-          <CardContent className="p-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <div className="relative aspect-square">
-                <Image
-                  src={currentImageUrl}
-                  alt={nft.name}
-                  fill
-                  className="object-cover rounded-lg"
-                  onError={handleImageError}
-                />
-              </div>
-              <div>
-                <h1 className="text-3xl font-bold mb-4">{nft.name}</h1>
-                <div className="space-y-4">
-                  <div>
-                    <div className="bg-secondary p-3 rounded-lg">
-                      <p className="text-sm">
-                        <span className="font-medium">Category: </span>
-                        {nft.attributes.value}
-                      </p>
+    <>
+      <div className="container mx-auto px-4 pt-24">
+        <div className="max-w-4xl mx-auto">
+          <Card>
+            <CardContent className="p-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className="relative aspect-square">
+                  <Image
+                    src={currentImageUrl}
+                    alt={nft.name}
+                    fill
+                    className="object-cover rounded-lg"
+                    onError={handleImageError}
+                  />
+                </div>
+                <div>
+                  <h1 className="text-3xl font-bold mb-4">{nft.name}</h1>
+                  <div className="space-y-4">
+                    <div>
+                      <div className="bg-secondary p-3 rounded-lg">
+                        <p className="text-sm">
+                          <span className="font-medium">Category: </span>
+                          {nft.attributes.value}
+                        </p>
+                      </div>
                     </div>
+                    {renderOwnershipInfo()}
                   </div>
-                  {renderOwnershipInfo()}
                 </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        </div>
       </div>
-    </div>
+      {tokenId && (
+        <OfferModal
+          isOpen={isOfferModalOpen}
+          onClose={() => setIsOfferModalOpen(false)}
+          tokenId={tokenId}
+          minPrice={nftData?.lastPrice ?? parseEther('0.01')}
+        />
+      )}
+    </>
   );
 }

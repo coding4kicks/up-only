@@ -253,5 +253,35 @@ export function useUpOnlyContract() {
     [publicClient, contractAddress]
   );
 
-  return { mint, getOwnedNFTs, getOffers, getNFTData };
+  const makeOffer = useCallback(
+    async (tokenId: number, amount: bigint) => {
+      if (!walletClient || !publicClient || !address) {
+        throw new Error('Wallet not connected');
+      }
+
+      const hash = await walletClient.writeContract({
+        address: contractAddress,
+        abi: UpOnlyArtifact.abi,
+        functionName: 'makeOffer',
+        args: [BigInt(tokenId)],
+        value: amount,
+        chain: walletClient.chain,
+        account: {
+          address,
+          type: 'json-rpc'
+        }
+      });
+
+      const receipt = await publicClient.waitForTransactionReceipt({ hash });
+
+      if (receipt.status === 'reverted') {
+        throw new Error('Transaction failed');
+      }
+
+      return receipt;
+    },
+    [walletClient, publicClient, address, contractAddress]
+  );
+
+  return { mint, getOwnedNFTs, getOffers, getNFTData, makeOffer };
 }
