@@ -352,6 +352,83 @@ describe('UpOnly', function () {
         upOnly.connect(addr2).revoke(tokenId)
       ).to.be.revertedWithCustomError(upOnly, 'Unauthorized');
     });
+
+    it('Should refund previous offer when new offer is made', async function () {
+      const { upOnly, owner, addr1, addr2 } = await loadFixture(deployFixture);
+      const tx = await mintTokens(upOnly, 1, owner);
+      const tokenId = await getTokenIdFromMintTx(tx);
+
+      // First offer from addr1
+      await upOnly
+        .connect(addr1)
+        ['offer(uint256)'](tokenId, { value: COSTS.TWO });
+
+      // Record addr1's balance before second offer
+      const addr1BalanceBefore = await ethers.provider.getBalance(
+        addr1.address
+      );
+
+      // Second offer from addr2
+      await upOnly
+        .connect(addr2)
+        ['offer(uint256)'](tokenId, { value: COSTS.FIVE });
+
+      // Check addr1 got refund (minus 1% fee)
+      const addr1BalanceAfter = await ethers.provider.getBalance(addr1.address);
+      const refundAmount = COSTS.TWO - COSTS.TWO / BigInt(100); // Original offer minus 1% fee
+
+      // Allow for small difference due to gas costs
+      const balanceDiff = addr1BalanceAfter - addr1BalanceBefore;
+      expect(balanceDiff).to.be.closeTo(
+        refundAmount,
+        ethers.parseEther('0.0001')
+      );
+    });
+
+    it('Should emit Revoke event when new offer overwrites previous offer', async function () {
+      const { upOnly, owner, addr1, addr2 } = await loadFixture(deployFixture);
+      const tx = await mintTokens(upOnly, 1, owner);
+      const tokenId = await getTokenIdFromMintTx(tx);
+
+      // First offer
+      await upOnly
+        .connect(addr1)
+        ['offer(uint256)'](tokenId, { value: COSTS.TWO });
+
+      // Second offer should emit Revoke event for first offer
+      await expect(
+        upOnly.connect(addr2)['offer(uint256)'](tokenId, { value: COSTS.FIVE })
+      )
+        .to.emit(upOnly, 'Revoke')
+        .withArgs(
+          tokenId,
+          addr1.address,
+          owner.address,
+          COSTS.TWO,
+          COSTS.TWO / BigInt(100)
+        );
+    });
+
+    it('Should maintain correct offer state after multiple offers', async function () {
+      const { upOnly, owner, addr1, addr2 } = await loadFixture(deployFixture);
+      const tx = await mintTokens(upOnly, 1, owner);
+      const tokenId = await getTokenIdFromMintTx(tx);
+
+      // First offer
+      await upOnly
+        .connect(addr1)
+        ['offer(uint256)'](tokenId, { value: COSTS.TWO });
+
+      // Second offer
+      await upOnly
+        .connect(addr2)
+        ['offer(uint256)'](tokenId, { value: COSTS.FIVE });
+
+      // Check current offer state
+      const tokenDataAfter = await upOnly.tokenData(tokenId);
+      expect(tokenDataAfter.currentOffer).to.equal(COSTS.FIVE);
+      expect(tokenDataAfter.offerer).to.equal(addr2.address);
+    });
   });
 
   describe('Transfers', function () {

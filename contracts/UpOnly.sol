@@ -158,26 +158,71 @@ contract UpOnly is ERC721, IERC7572, ReentrancyGuard {
     }
 
     // Offer a higher price for a token and set who gets the token or refund
-    function offer(uint256 tokenId, address payable recipient) public payable {
+    function offer(uint256 tokenId, address payable recipient) public payable nonReentrant {
         if (msg.value <= tokenData[tokenId].lastPrice) revert OfferTooLow();
-        if (msg.value <= tokenData[tokenId].currentOffer) revert OfferTooLate();
         if (recipient == address(0)) revert ZeroAddress();
-        tokenData[tokenId].offerer = recipient;
-        tokenData[tokenId].currentOffer = msg.value;
-
-        // FTX token easter egg
+        
+        // Handle FTX token easter egg validation first
         if (tokenId == 12) {
             uint256 buffer = tokenData[tokenId].lastPrice * 5 / 100;
-            if (tokenData[tokenId].currentOffer <= tokenData[tokenId].lastPrice + buffer) revert OfferTooLow();
-            // Approve offerer to transfer all tokens of owner
-            address owner = ownerOf(tokenId);
-            super._setApprovalForAll(owner, recipient, true);
-            transferFrom(owner, recipient, tokenId);
-            // Remove approval for offerer to transfer all tokens of owner
-            super._setApprovalForAll(owner, recipient, false);
+            if (msg.value <= tokenData[tokenId].lastPrice + buffer) revert OfferTooLow();
+            // Handle easter egg in separate function to avoid reentrancy lock
+            _handleEasterEggOffer(tokenId, recipient);
+            return;
         }
-
+        
+        // Capture old state
+        address payable currentOfferer = tokenData[tokenId].offerer;
+        uint256 currentOffer = tokenData[tokenId].currentOffer;
+        
+        // Update all state first
+        tokenData[tokenId].offerer = recipient;
+        tokenData[tokenId].currentOffer = msg.value;
+        
         emit Offer(tokenId, recipient, ownerOf(tokenId), msg.value);
+
+        if (currentOfferer != address(0)) {
+            uint256 fee = currentOffer / 100;
+            emit Revoke(tokenId, currentOfferer, ownerOf(tokenId), currentOffer, fee);
+            
+            // External calls after all state changes
+            (bool success, ) = currentOfferer.call{value: currentOffer - fee}("");
+            require(success, "Failed to return previous offer");
+            
+            (success, ) = royaltyAddress.call{value: fee}("");
+            require(success, "Failed to pay royalties for revoke");
+        }
+    }
+
+    // New function to handle easter egg token separately
+    function _handleEasterEggOffer(uint256 tokenId, address payable recipient) private {
+        address owner = ownerOf(tokenId);
+        
+        // Update state
+        tokenData[tokenId].lastPrice = msg.value; // Set as completed price instead of offer
+        tokenData[tokenId].currentOffer = 0; // Clear offer since we're doing direct transfer
+        tokenData[tokenId].offerer = payable(address(0)); // Clear offerer
+        
+        emit Offer(tokenId, recipient, owner, msg.value);
+        
+        // Calculate and pay royalty fee
+        uint256 fee = msg.value * royalty / 100;
+        uint256 payment = msg.value - fee;
+        
+        // Pay the owner
+        (bool success, ) = payable(owner).call{value: payment}("");
+        require(success, "Failed to pay owner");
+        
+        // Pay royalty
+        (success, ) = royaltyAddress.call{value: fee}("");
+        require(success, "Failed to pay royalties");
+        
+        // Handle the transfer directly
+        super._setApprovalForAll(owner, recipient, true);
+        super.transferFrom(owner, recipient, tokenId); // Use super.transferFrom to skip _payout
+        super._setApprovalForAll(owner, recipient, false);
+        
+        emit Payout(tokenId, recipient, owner, msg.value, fee);
     }
 
     function offer(uint256 tokenId) public payable {
