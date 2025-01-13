@@ -201,6 +201,19 @@ export default function NFTPage() {
               </span>
             </div>
           )}
+          {hasOffer &&
+            nftData.offerer !==
+              '0x0000000000000000000000000000000000000000' && (
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-muted-foreground">Offerer</span>
+                <span
+                  className="text-sm font-medium hover:cursor-help"
+                  title={nftData.offerer}
+                >
+                  {truncateAddress(nftData.offerer)}
+                </span>
+              </div>
+            )}
           {hasOffer && (
             <div className="flex justify-between items-center">
               <span className="text-sm text-muted-foreground">
