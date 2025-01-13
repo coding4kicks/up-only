@@ -55,110 +55,84 @@ export function useUpOnlyContract() {
     }
 
     try {
-      // Get recent mint events (last 1000 blocks)
       const currentBlock = await publicClient.getBlockNumber();
-      const fromBlock = currentBlock - BigInt(1000);
+      // Increase the block range to catch more historical transfers
+      const fromBlock = currentBlock - BigInt(100000); // Look back further
 
-      // Combine token IDs from both events
-      const potentialTokens = new Set<number>();
+      // Track token ownership changes
+      const tokenOwnership = new Map<number, boolean>();
 
-      try {
-        // Handle mint events
-        const mintEvents =
-          (await publicClient.getContractEvents({
-            address: contractAddress,
+      // Get ALL Transfer events for the contract
+      const transferEvents = await publicClient.getContractEvents({
+        address: contractAddress,
+        abi: UpOnlyArtifact.abi,
+        eventName: 'Transfer',
+        fromBlock
+        // Remove any filtering here to get all transfers
+      });
+
+      // Process transfer events chronologically
+      for (const event of transferEvents) {
+        try {
+          const decoded = decodeEventLog({
             abi: UpOnlyArtifact.abi,
-            eventName: 'Mint',
-            fromBlock
-          })) ?? [];
+            data: event.data,
+            topics: event.topics,
+            eventName: 'Transfer'
+          });
+          const args = decoded.args as unknown as {
+            from: string;
+            to: string;
+            tokenId: bigint;
+          };
 
-        // Handle transfer events
-        const transferEvents =
-          (await publicClient.getContractEvents({
-            address: contractAddress,
-            abi: UpOnlyArtifact.abi,
-            eventName: 'Transfer',
-            fromBlock,
-            args: {
-              to: address
-            }
-          })) ?? [];
+          const tokenId = Number(args.tokenId);
+          const fromAddress = args.from.toLowerCase();
+          const toAddress = args.to.toLowerCase();
+          const userAddress = address.toLowerCase();
 
-        // Process mint events
-        for (const event of mintEvents) {
-          try {
-            const decoded = decodeEventLog({
-              abi: UpOnlyArtifact.abi,
-              data: event.data,
-              topics: event.topics,
-              eventName: 'Mint'
-            });
-            // Handle decoded args as an object instead of array
-            const args = decoded.args as unknown as {
-              token: bigint;
-              owner: string;
-              amount: bigint;
-              cost: bigint;
-              supply: bigint;
-            };
-
-            if (args.owner === address) {
-              potentialTokens.add(Number(args.token));
-            }
-          } catch (err) {
-            console.error('Error processing mint event:', err);
+          // Track the most recent transfer for each token
+          if (fromAddress === userAddress) {
+            // User sent the token
+            tokenOwnership.set(tokenId, false);
           }
-        }
-
-        // Process transfer events
-        for (const event of transferEvents) {
-          try {
-            const decoded = decodeEventLog({
-              abi: UpOnlyArtifact.abi,
-              data: event.data,
-              topics: event.topics,
-              eventName: 'Transfer'
-            });
-            const args = decoded.args as unknown as {
-              from: string;
-              to: string;
-              tokenId: bigint;
-            };
-            potentialTokens.add(Number(args.tokenId));
-          } catch (err) {
-            console.error('Error processing transfer event:', err);
+          if (toAddress === userAddress) {
+            // User received the token (including mints from zero address)
+            tokenOwnership.set(tokenId, true);
           }
+        } catch (err) {
+          console.error('Error processing transfer event:', err);
         }
-      } catch (error) {
-        console.error('Error processing events:', error);
       }
 
-      // Verify current ownership of potential tokens
+      // Double check current ownership with ownerOf calls
       const ownedTokenIds = new Set<number>();
 
       await Promise.all(
-        Array.from(potentialTokens).map(async tokenId => {
-          try {
-            const owner = (await publicClient.readContract({
-              address: contractAddress,
-              abi: UpOnlyArtifact.abi,
-              functionName: 'ownerOf',
-              args: [BigInt(tokenId)]
-            })) as `0x${string}`;
+        Array.from(tokenOwnership.entries())
+          .filter(([_, isOwned]) => isOwned) // Only verify tokens marked as owned
+          .map(async ([tokenId]) => {
+            try {
+              const owner = (await publicClient.readContract({
+                address: contractAddress,
+                abi: UpOnlyArtifact.abi,
+                functionName: 'ownerOf',
+                args: [BigInt(tokenId)]
+              })) as `0x${string}`;
 
-            if (owner.toLowerCase() === address.toLowerCase()) {
-              ownedTokenIds.add(tokenId);
+              if (owner.toLowerCase() === address.toLowerCase()) {
+                ownedTokenIds.add(tokenId);
+              }
+            } catch {
+              // Token doesn't exist or ownership changed
+              return;
             }
-          } catch {
-            // Token doesn't exist or ownership changed
-            return;
-          }
-        })
+          })
       );
 
       // Map token IDs to metadata
       return Array.from(ownedTokenIds)
-        .map(id => nftMetadata[id])
+        .map(id => nftMetadata[id - 1]) // Adjust index since tokenIds start at 1
         .filter(Boolean);
     } catch (error) {
       console.error('Error fetching NFTs:', error);
