@@ -21,7 +21,7 @@ import { truncateAddress } from '@/lib/utils';
 export default function NFTPage() {
   const params = useParams();
   const { address, isConnected } = useWallet();
-  const { mint, getNFTData } = useUpOnlyContract();
+  const { mint, getNFTData, revokeOffer } = useUpOnlyContract();
   const [currentGatewayIndex, setCurrentGatewayIndex] = useState(0);
   const [currentImageUrl, setCurrentImageUrl] = useState<string>('');
   const [nft, setNft] = useState<NFTMetadata | null>(null);
@@ -31,6 +31,7 @@ export default function NFTPage() {
   const [isMinting, setIsMinting] = useState(false);
   const { toast } = useToast();
   const [isOfferModalOpen, setIsOfferModalOpen] = useState(false);
+  const [isRevoking, setIsRevoking] = useState(false);
 
   useEffect(() => {
     const nftName = (params.nftName as string).replace(/_/g, ' ');
@@ -133,6 +134,36 @@ export default function NFTPage() {
     setIsOfferModalOpen(true);
   };
 
+  const handleRevokeOffer = async () => {
+    if (!tokenId) return;
+
+    setIsRevoking(true);
+    try {
+      const tx = await revokeOffer(tokenId);
+      if (tx.status === 'success') {
+        toast({
+          title: 'Offer Revoked Successfully!',
+          description: 'Your offer has been revoked.',
+          duration: 5000
+        });
+        fetchNFTData();
+      } else {
+        throw new Error('Transaction failed');
+      }
+    } catch (error) {
+      console.error('Error revoking offer:', error);
+      toast({
+        title: 'Revoke Failed',
+        description:
+          error instanceof Error ? error.message : 'Failed to revoke offer',
+        variant: 'destructive',
+        duration: 5000
+      });
+    } finally {
+      setIsRevoking(false);
+    }
+  };
+
   const renderNFTInfo = () => {
     if (isLoading) return <p className="text-muted-foreground">Loading...</p>;
 
@@ -228,6 +259,23 @@ export default function NFTPage() {
         {!isOwner && !isOfferer && (
           <Button onClick={handleOfferClick} className="w-full">
             Make Offer
+          </Button>
+        )}
+        {isOfferer && (
+          <Button
+            onClick={handleRevokeOffer}
+            className="w-full"
+            disabled={isRevoking}
+            variant="destructive"
+          >
+            {isRevoking ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Revoking...
+              </>
+            ) : (
+              'Revoke Offer'
+            )}
           </Button>
         )}
       </div>
