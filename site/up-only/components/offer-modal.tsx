@@ -22,13 +22,15 @@ interface OfferModalProps {
   onClose: () => void;
   tokenId: number;
   minPrice: bigint;
+  onOfferSuccess?: () => Promise<void>;
 }
 
 export default function OfferModal({
   isOpen,
   onClose,
   tokenId,
-  minPrice
+  minPrice,
+  onOfferSuccess
 }: OfferModalProps) {
   const [offerAmount, setOfferAmount] = useState(() => {
     const minimumEth = Number(formatEther(minPrice));
@@ -51,6 +53,9 @@ export default function OfferModal({
           description: `You have offered ${offerAmount} ETH.`,
           duration: 5000
         });
+        if (onOfferSuccess) {
+          await onOfferSuccess();
+        }
         onClose();
       } else {
         throw new Error('Transaction failed');

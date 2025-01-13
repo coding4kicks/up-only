@@ -104,7 +104,7 @@ export default function NFTPage() {
           description: `You have minted ${nft?.name}.`,
           duration: 5000
         });
-        fetchNFTData(nft!);
+        await fetchNFTData();
       } else {
         throw new Error('Transaction failed');
       }
@@ -147,7 +147,7 @@ export default function NFTPage() {
           description: 'Your offer has been revoked.',
           duration: 5000
         });
-        fetchNFTData();
+        await fetchNFTData();
       } else {
         throw new Error('Transaction failed');
       }
@@ -177,7 +177,7 @@ export default function NFTPage() {
           description: 'The NFT has been transferred.',
           duration: 5000
         });
-        fetchNFTData();
+        await fetchNFTData();
       } else {
         throw new Error('Transaction failed');
       }
@@ -380,6 +380,7 @@ export default function NFTPage() {
                 )
               : parseEther('0.01')
           }
+          onOfferSuccess={fetchNFTData}
         />
       )}
     </>
