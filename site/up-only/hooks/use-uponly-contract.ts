@@ -262,7 +262,7 @@ export function useUpOnlyContract() {
       const hash = await walletClient.writeContract({
         address: contractAddress,
         abi: UpOnlyArtifact.abi,
-        functionName: 'makeOffer',
+        functionName: 'offer',
         args: [BigInt(tokenId)],
         value: amount,
         chain: walletClient.chain,

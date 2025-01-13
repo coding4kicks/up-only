@@ -259,7 +259,16 @@ export default function NFTPage() {
           isOpen={isOfferModalOpen}
           onClose={() => setIsOfferModalOpen(false)}
           tokenId={tokenId}
-          minPrice={nftData?.lastPrice ?? parseEther('0.01')}
+          minPrice={
+            nftData
+              ? BigInt(
+                  Math.max(
+                    Number(nftData.lastPrice),
+                    Number(nftData.currentOffer)
+                  )
+                )
+              : parseEther('0.01')
+          }
         />
       )}
     </>

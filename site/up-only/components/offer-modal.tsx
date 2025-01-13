@@ -30,7 +30,10 @@ export default function OfferModal({
   tokenId,
   minPrice
 }: OfferModalProps) {
-  const [offerAmount, setOfferAmount] = useState('');
+  const [offerAmount, setOfferAmount] = useState(() => {
+    const minimumEth = Number(formatEther(minPrice));
+    return (minimumEth + 0.001).toFixed(3);
+  });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { address } = useWallet();
   const { makeOffer } = useUpOnlyContract();
@@ -88,7 +91,8 @@ export default function OfferModal({
           <div className="flex items-center gap-4">
             <Input
               type="number"
-              step="0.01"
+              step="0.001"
+              min={formatEther(minPrice)}
               placeholder="ETH Amount"
               value={offerAmount}
               onChange={e => setOfferAmount(e.target.value)}
