@@ -18,7 +18,7 @@ import {
 } from 'viem';
 import { mainnet, sepolia } from 'viem/chains';
 
-const TEST_CONTRACT_ADDRESS = '0x5837B7De4149E57705d5765d59D6235D5134D808';
+const TEST_CONTRACT_ADDRESS = '0xa8Fe01276CDba2f22D10A4Ef908c90f24E7df709';
 const MAINNET_CONTRACT_ADDRESS = '0x0000000000000000000000000000000000000000'; // Placeholder for future mainnet contract
 
 interface WalletContextType {
