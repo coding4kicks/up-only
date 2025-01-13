@@ -233,7 +233,6 @@ export function useUpOnlyContract() {
           functionName: 'tokenData',
           args: [BigInt(tokenId)]
         });
-
         return data as NFTData;
       } catch {
         // Token doesn't exist yet

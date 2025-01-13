@@ -108,10 +108,9 @@ export default function NFTPage() {
 
   const renderOwnershipInfo = () => {
     if (isLoading) return <p className="text-muted-foreground">Loading...</p>;
-
     // NFT hasn't been minted yet
     if (!nftData) {
-      return isConnected ? (
+      return (
         <div className="space-y-4">
           <p className="text-sm text-muted-foreground">
             This NFT hasn't been minted yet
@@ -127,7 +126,7 @@ export default function NFTPage() {
             )}
           </Button>
         </div>
-      ) : null;
+      );
     }
 
     const isOwner =
@@ -135,7 +134,6 @@ export default function NFTPage() {
       nftData.owner &&
       nftData.owner.toLowerCase() === address.toLowerCase();
     const hasOffer = nftData.currentOffer > BigInt(0);
-    console.log('nftData', nftData, isOwner, hasOffer);
     return (
       <div className="space-y-4">
         <div className="bg-secondary p-3 rounded-lg space-y-2">
