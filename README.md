@@ -4,6 +4,10 @@
 
 Up Only NFTs are a unique collection of experimental NFTs with an innovative price mechanism that ensures tokens can only increase in value. This project implements a novel approach to NFT trading where each transfer must be at a higher price than the previous one.
 
+## Live Site
+
+Visit the live site at [bulletz.xyz](https://www.bulletz.xyz/)
+
 ## Overview
 
 The `UpOnly.sol` smart contract introduces several key features:
