@@ -179,7 +179,7 @@ npx hardhat help
 
 ## Test Flight
 
-Test Flight contract address: [0xa8Fe01276CDba2f22D10A4Ef908c90f24E7df709](https://sepolia.etherscan.io/address/0xa8Fe01276CDba2f22D10A4Ef908c90f24E7df709)
+Test Flight contract address: [0xb16Bb848C4e0C2192adB7B7f222De12811f8E0b1](https://sepolia.etherscan.io/address/0xb16Bb848C4e0C2192adB7B7f222De12811f8E0b1)
 
 ## License
 
