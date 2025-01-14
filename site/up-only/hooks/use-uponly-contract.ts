@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 import { parseEther, Log, decodeEventLog } from 'viem';
 import { useWallet } from '@/context/wallet-context';
-import UpOnlyArtifact from '../../../artifacts/contracts/UpOnly.sol/UpOnly.json';
+import UpOnlyArtifact from '@/artifacts/contracts/UpOnly.sol/UpOnly.json';
 import type { NFTMetadata } from '@/types/nft';
 import { nftMetadata } from '@/data/nft-metadata';
 
