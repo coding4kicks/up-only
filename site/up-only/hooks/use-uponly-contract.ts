@@ -12,6 +12,8 @@ export interface NFTData {
   offerer: string;
 }
 
+type ExtendedLog = Log & { eventName?: string };
+
 export function useUpOnlyContract() {
   const { walletClient, publicClient, address, contractAddress } = useWallet();
 
@@ -110,7 +112,7 @@ export function useUpOnlyContract() {
 
       await Promise.all(
         Array.from(tokenOwnership.entries())
-          .filter(([_, isOwned]) => isOwned) // Only verify tokens marked as owned
+          .filter(([, isOwned]) => isOwned) // Only verify tokens marked as owned
           .map(async ([tokenId]) => {
             try {
               const owner = (await publicClient.readContract({
@@ -173,7 +175,7 @@ export function useUpOnlyContract() {
         Number(a.blockNumber - b.blockNumber)
       );
 
-      for (const event of allEvents) {
+      for (const event of allEvents as ExtendedLog[]) {
         try {
           if (event.eventName === 'Offer') {
             const decoded = decodeEventLog({
@@ -231,7 +233,7 @@ export function useUpOnlyContract() {
               args: [BigInt(tokenId)]
             })) as [bigint, bigint, string];
 
-            const [_, __, offerer] = tokenData;
+            const [, , offerer] = tokenData;
 
             if (offerer.toLowerCase() === address.toLowerCase()) {
               confirmedOffers.add(tokenId);
