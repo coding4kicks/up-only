@@ -552,4 +552,24 @@ describe('UpOnly', function () {
       );
     });
   });
+
+  describe('Token URI', function () {
+    it('Should return correct token URI', async function () {
+      const { upOnly, owner } = await loadFixture(deployFixture);
+      const tx = await mintTokens(upOnly, 1, owner);
+      const tokenId = await getTokenIdFromMintTx(tx);
+
+      const expectedURI = `${METADATA.BASE_URI}/${tokenId}${METADATA.BASE_EXTENSION}`;
+      expect(await upOnly.tokenURI(tokenId)).to.equal(expectedURI);
+    });
+
+    it('Should revert for nonexistent token', async function () {
+      const { upOnly } = await loadFixture(deployFixture);
+      const nonexistentTokenId = 999;
+
+      await expect(
+        upOnly.tokenURI(nonexistentTokenId)
+      ).to.be.revertedWithCustomError(upOnly, 'ERC721NonexistentToken');
+    });
+  });
 });

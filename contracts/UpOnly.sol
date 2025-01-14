@@ -5,6 +5,7 @@ import "hardhat/console.sol";
 
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/utils/Strings.sol";
 
 interface IERC7572 {
   function contractURI() external view returns (string memory);
@@ -13,6 +14,8 @@ interface IERC7572 {
 }
 
 contract UpOnly is ERC721, IERC7572, ReentrancyGuard {
+    using Strings for uint256;
+    
     // Pack related uint256 variables together
     struct TokenData {
         uint256 lastPrice;
@@ -285,6 +288,14 @@ contract UpOnly is ERC721, IERC7572, ReentrancyGuard {
         royaltyAddress = newRoyaltyAddress;
         
         emit RoyaltyAddressUpdated(oldAddress, newRoyaltyAddress);
+    }
+
+    // Add this function after the constructor
+    function tokenURI(uint256 tokenId) public view virtual override returns (string memory) {
+        // Use ownerOf which will revert if token doesn't exist
+        ownerOf(tokenId); // This will revert with appropriate message if token doesn't exist
+        
+        return string(abi.encodePacked(baseURI, "/", Strings.toString(tokenId), baseExtension));
     }
 
 }
