@@ -18,6 +18,7 @@ import {
 } from 'viem';
 import { mainnet, sepolia } from 'viem/chains';
 import { CONTRACT_ADDRESSES } from '@/lib/constants';
+import { config } from '@/config';
 
 interface WalletContextType {
   address: `0x${string}` | null;
@@ -39,6 +40,17 @@ const WalletContext = createContext<WalletContextType>({
   contractAddress: CONTRACT_ADDRESSES.MAINNET as `0x${string}`
 });
 
+function getAlchemyNetwork(chain: Chain): string {
+  switch (chain.id) {
+    case mainnet.id:
+      return 'eth-mainnet';
+    case sepolia.id:
+      return 'eth-sepolia';
+    default:
+      return 'eth-mainnet';
+  }
+}
+
 export function WalletProvider({ children }: { children: ReactNode }) {
   const [address, setAddress] = useState<`0x${string}` | null>(null);
   const [chain, setChain] = useState<Chain>(mainnet);
@@ -46,7 +58,11 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   const [publicClient, setPublicClient] = useState<PublicClient>(() =>
     createPublicClient({
       chain: mainnet,
-      transport: http()
+      transport: http(
+        `https://${getAlchemyNetwork(mainnet)}.g.alchemy.com/v2/${
+          config.alchemyApiKey
+        }`
+      )
     })
   );
   const [contractAddress, setContractAddress] = useState<`0x${string}`>(
@@ -63,7 +79,11 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     setPublicClient(
       createPublicClient({
         chain: newChain,
-        transport: http()
+        transport: http(
+          `https://${getAlchemyNetwork(newChain)}.g.alchemy.com/v2/${
+            config.alchemyApiKey
+          }`
+        )
       })
     );
 
