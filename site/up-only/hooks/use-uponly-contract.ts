@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { parseEther, Log, decodeEventLog } from 'viem';
+import { parseEther, Log, decodeEventLog, type Abi } from 'viem';
 import { useWallet } from '@/context/wallet-context';
 import UpOnlyArtifact from '@/artifacts/contracts/UpOnly.sol/UpOnly.json';
 import type { NFTMetadata } from '@/types/nft';
@@ -18,6 +18,33 @@ type ExtendedLog = Log & { eventName?: string };
 const MAX_BLOCK_RANGE = BigInt(10000);
 // How far back to look for events (keep the 200000 blocks)
 const TOTAL_BLOCK_RANGE = BigInt(200000);
+
+// Add these interfaces at the top of the file
+interface TransferEvent {
+  eventName: 'Transfer';
+  args: {
+    from: string;
+    to: string;
+    tokenId: bigint;
+  };
+}
+
+interface OfferEvent {
+  eventName: 'Offer';
+  args: {
+    token: bigint;
+    recipient: string;
+    owner: string;
+    offer: bigint;
+  };
+}
+
+// Add at the top with other interfaces
+interface MulticallResult<T> {
+  status: 'success' | 'failure';
+  result: T;
+  error?: Error;
+}
 
 // Add this helper function at the top level
 async function getAllEvents(
@@ -118,7 +145,8 @@ export function useUpOnlyContract() {
           data: event.data,
           topics: event.topics,
           eventName: 'Transfer'
-        });
+        }) as unknown as TransferEvent;
+
         const tokenId = Number(decoded.args.tokenId);
         ownedTokenIds.add(tokenId);
       });
@@ -140,28 +168,29 @@ export function useUpOnlyContract() {
           data: event.data,
           topics: event.topics,
           eventName: 'Transfer'
-        });
+        }) as unknown as TransferEvent;
+
         const tokenId = Number(decoded.args.tokenId);
         ownedTokenIds.delete(tokenId);
       });
 
       // Verify current ownership with multicall for efficiency
       if (ownedTokenIds.size > 0) {
-        const ownershipChecks = await publicClient.multicall({
+        const ownershipChecks = (await publicClient.multicall({
           contracts: Array.from(ownedTokenIds).map(tokenId => ({
             address: contractAddress,
-            abi: UpOnlyArtifact.abi,
+            abi: UpOnlyArtifact.abi as Abi,
             functionName: 'ownerOf',
             args: [BigInt(tokenId)]
           }))
-        });
+        })) as MulticallResult<`0x${string}`>[];
 
         // Keep only tokens still owned by user
         const verifiedTokens = new Set<number>();
         Array.from(ownedTokenIds).forEach((tokenId, index) => {
           if (
             ownershipChecks[index].status === 'success' &&
-            ownershipChecks[index].result.toLowerCase() ===
+            ownershipChecks[index].result?.toLowerCase() ===
               address.toLowerCase()
           ) {
             verifiedTokens.add(tokenId);
@@ -209,26 +238,28 @@ export function useUpOnlyContract() {
           data: event.data,
           topics: event.topics,
           eventName: 'Offer'
-        });
+        }) as unknown as OfferEvent;
+
         potentialOffers.add(Number(decoded.args.token));
       });
 
       // Verify offers are still active with multicall
       if (potentialOffers.size > 0) {
-        const offerChecks = await publicClient.multicall({
+        const offerChecks = (await publicClient.multicall({
           contracts: Array.from(potentialOffers).map(tokenId => ({
             address: contractAddress,
-            abi: UpOnlyArtifact.abi,
+            abi: UpOnlyArtifact.abi as Abi,
             functionName: 'tokenData',
             args: [BigInt(tokenId)]
           }))
-        });
+        })) as MulticallResult<[bigint, bigint, `0x${string}`]>[];
 
         const activeOffers = new Set<number>();
         Array.from(potentialOffers).forEach((tokenId, index) => {
           if (
             offerChecks[index].status === 'success' &&
-            offerChecks[index].result[2].toLowerCase() === address.toLowerCase()
+            offerChecks[index].result?.[2].toLowerCase() ===
+              address.toLowerCase()
           ) {
             activeOffers.add(tokenId);
           }
