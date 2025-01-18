@@ -15,9 +15,9 @@ export interface NFTData {
 type ExtendedLog = Log & { eventName?: string };
 
 // Maximum block range allowed by RPC provider
-const MAX_BLOCK_RANGE = 10000n;
+const MAX_BLOCK_RANGE = BigInt(10000);
 // How far back to look for events (keep the 200000 blocks)
-const TOTAL_BLOCK_RANGE = 200000n;
+const TOTAL_BLOCK_RANGE = BigInt(200000);
 
 // Add this helper function at the top level
 async function getAllEvents(
